@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Mercedes-Benz Bot Dashboard')</title>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
+    @stack('styles')
+</head>
+<body class="bg-gray-50 antialiased" x-data="{ sidebarOpen: false }">
+    @auth
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0"
+         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-20 px-6 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <img src="{{ asset('images/logomercedes.png') }}" alt="Mercedes-Benz" class="h-12 w-12 object-contain">
+                <div>
+                    <span class="text-lg font-bold text-gray-900">Mercedes-Benz</span>
+                    <p class="text-xs text-gray-500">Bot Dashboard</p>
+                </div>
+            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <a href="{{ route('dashboard') }}"
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard')) bg-primary-50 text-primary-700 @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Dashboard
+            </a>
+
+            <a href="{{ route('dashboard.active') }}"
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard.active')) bg-primary-50 text-primary-700 @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Conversations actives
+                @if(isset($activeCount) && $activeCount > 0)
+                <span class="ml-auto bg-primary-100 text-primary-700 px-2 py-1 text-xs font-semibold rounded-full">{{ $activeCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('dashboard.conversations') }}"
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard.conversations') || request()->routeIs('dashboard.show')) bg-primary-50 text-primary-700 @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                Toutes les conversations
+            </a>
+
+            <a href="{{ route('dashboard.statistics') }}"
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard.statistics')) bg-primary-50 text-primary-700 @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Statistiques
+            </a>
+
+            <a href="{{ route('dashboard.search') }}"
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard.search')) bg-primary-50 text-primary-700 @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Recherche
+            </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="border-t border-gray-200" x-data="{ userMenuOpen: false }">
+            <button @click="userMenuOpen = !userMenuOpen" class="flex items-center w-full px-6 py-4 text-sm hover:bg-gray-50 transition-colors duration-150">
+                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-semibold">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                </div>
+                <div class="ml-3 text-left flex-1">
+                    <div class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</div>
+                    <div class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</div>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': userMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <div x-show="userMenuOpen" x-cloak class="px-4 pb-4">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Déconnexion
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for mobile -->
+    <div x-show="sidebarOpen"
+         @click="sidebarOpen = false"
+         x-cloak
+         class="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 lg:hidden"></div>
+
+    <!-- Main Content -->
+    <div class="lg:pl-64">
+        <!-- Top navbar -->
+        <div class="sticky top-0 z-30 bg-white border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-6">
+                <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+
+                <div class="flex-1 lg:ml-0 ml-4">
+                    <h1 class="text-xl font-semibold text-gray-900">@yield('page-title', 'Dashboard')</h1>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <button class="relative text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <main class="p-6">
+            @if(session('success'))
+            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center" x-data="{ show: true }" x-show="show">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span>{{ session('success') }}</span>
+                <button @click="show = false" class="ml-auto text-green-600 hover:text-green-800">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center" x-data="{ show: true }" x-show="show">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <span>{{ session('error') }}</span>
+                <button @click="show = false" class="ml-auto text-red-600 hover:text-red-800">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+            @endif
+
+            @yield('content')
+        </main>
+    </div>
+    @else
+    @yield('content')
+    @endauth
+
+    @stack('scripts')
+</body>
+</html>

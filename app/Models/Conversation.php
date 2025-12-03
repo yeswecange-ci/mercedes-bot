@@ -1,0 +1,169 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Conversation extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'session_id',
+        'phone_number',
+        'nom_prenom',
+        'is_client',
+        'email',
+        'vin',
+        'carte_vip',
+        'chatwoot_conversation_id',
+        'chatwoot_contact_id',
+        'status',
+        'current_menu',
+        'menu_path',
+        'last_widget',
+        'started_at',
+        'ended_at',
+        'last_activity_at',
+        'transferred_at',
+    ];
+
+    protected $casts = [
+        'is_client' => 'boolean',
+        'menu_path' => 'array',
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'last_activity_at' => 'datetime',
+        'transferred_at' => 'datetime',
+    ];
+
+    /**
+     * Relation avec les événements
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(ConversationEvent::class)->orderBy('event_at');
+    }
+
+    /**
+     * Récupérer les événements de saisie libre
+     */
+    public function freeInputEvents(): HasMany
+    {
+        return $this->hasMany(ConversationEvent::class)
+                    ->where('event_type', 'free_input')
+                    ->orderBy('event_at');
+    }
+
+    /**
+     * Récupérer le parcours complet
+     */
+    public function getFullPathAttribute(): array
+    {
+        return $this->events()
+                    ->whereIn('event_type', ['menu_choice', 'menu_display'])
+                    ->pluck('menu_name')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+    }
+
+    /**
+     * Calculer la durée de la session
+     */
+    public function getDurationSecondsAttribute(): ?int
+    {
+        if (!$this->ended_at) {
+            return null;
+        }
+        return $this->started_at->diffInSeconds($this->ended_at);
+    }
+
+    /**
+     * Vérifier si la conversation est active
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Vérifier si transférée à un agent
+     */
+    public function isTransferred(): bool
+    {
+        return $this->status === 'transferred';
+    }
+
+    /**
+     * Scope pour les conversations actives
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope pour les conversations d'aujourd'hui
+     */
+    public function scopeToday($query)
+    {
+        return $query->whereDate('started_at', today());
+    }
+
+    /**
+     * Scope pour les conversations transférées
+     */
+    public function scopeTransferred($query)
+    {
+        return $query->where('status', 'transferred');
+    }
+
+    /**
+     * Trouver ou créer par session_id
+     */
+    public static function findOrCreateBySession(string $sessionId, string $phoneNumber): self
+    {
+        return self::firstOrCreate(
+            ['session_id' => $sessionId],
+            [
+                'phone_number' => $phoneNumber,
+                'status' => 'active',
+                'started_at' => now(),
+                'last_activity_at' => now(),
+            ]
+        );
+    }
+
+    /**
+     * Mettre à jour l'activité
+     */
+    public function updateActivity(): bool
+    {
+        $this->last_activity_at = now();
+        return $this->save();
+    }
+
+    /**
+     * Terminer la conversation
+     */
+    public function complete(): bool
+    {
+        $this->status = 'completed';
+        $this->ended_at = now();
+        return $this->save();
+    }
+
+    /**
+     * Marquer comme transférée
+     */
+    public function markAsTransferred(int $chatwootConversationId): bool
+    {
+        $this->status = 'transferred';
+        $this->chatwoot_conversation_id = $chatwootConversationId;
+        $this->transferred_at = now();
+        return $this->save();
+    }
+}

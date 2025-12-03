@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer install:*)",
+      "Bash(test:*)",
+      "Bash(php artisan key:generate:*)",
+      "Bash(composer dump-autoload:*)",
+      "Bash(php artisan db:seed:*)",
+      "Bash(php artisan migrate:status:*)",
+      "Bash(php artisan migrate:*)",
+      "Bash(php artisan migrate:fresh:*)",
+      "Bash(php artisan serve:*)",
+      "Bash(php artisan:*)",
+      "Bash(php artisan cache:clear:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
