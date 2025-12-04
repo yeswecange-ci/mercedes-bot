@@ -1,0 +1,367 @@
+{
+  "description": "Mercedes-Benz Bot - Flow Principal Corrigé",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "next": "send_to_laravel_incoming",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -10,
+          "y": -360
+        }
+      }
+    },
+    {
+      "name": "send_to_laravel_incoming",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "set_conversation_id",
+          "event": "success"
+        },
+        {
+          "next": "split_first",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -430,
+          "y": -190
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "add_twilio_auth": false,
+        "parameters": [
+          {
+            "value": "{{trigger.message.From}}",
+            "key": "From"
+          },
+          {
+            "value": "{{trigger.message.Body}}",
+            "key": "Body"
+          },
+          {
+            "value": "{{trigger.message.MessageSid}}",
+            "key": "MessageSid"
+          },
+          {
+            "value": "{{trigger.message.ProfileName}}",
+            "key": "ProfileName"
+          }
+        ],
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/incoming"
+      }
+    },
+    {
+      "name": "set_conversation_id",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "check_agent_available",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "key": "conversation_id",
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}"
+          },
+          {
+            "key": "session_id",
+            "value": "{{widgets.send_to_laravel_incoming.parsed.session_id}}"
+          },
+          {
+            "key": "phone_number",
+            "value": "{{widgets.send_to_laravel_incoming.parsed.phone_number}}"
+          },
+          {
+            "key": "agent_mode",
+            "value": "{{widgets.send_to_laravel_incoming.parsed.agent_mode}}"
+          }
+        ],
+        "offset": {
+          "x": -700,
+          "y": -190
+        }
+      }
+    },
+    {
+      "name": "check_agent_available",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "split_first",
+          "event": "noMatch"
+        },
+        {
+          "next": "notify_agent_transfer",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to true",
+              "arguments": [
+                "{{flow.variables.agent_mode}}"
+              ],
+              "type": "equal_to",
+              "value": "true"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{flow.variables.agent_mode}}",
+        "offset": {
+          "x": -1100,
+          "y": -260
+        }
+      }
+    },
+    {
+      "name": "notify_agent_transfer",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "agent_takeover_notification",
+          "event": "success"
+        },
+        {
+          "next": "agent_takeover_notification",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1300,
+          "y": -80
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "add_twilio_auth": false,
+        "parameters": [
+          {
+            "key": "conversation_id",
+            "value": "{{flow.variables.conversation_id}}"
+          },
+          {
+            "key": "reason",
+            "value": "Agent deja assigne - Mode agent actif"
+          }
+        ],
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/agent-transfer"
+      }
+    },
+    {
+      "name": "agent_takeover_notification",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1080,
+          "y": 80
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Bienvenue chez Mercedes-Benz Cote d'Ivoire. Votre message a ete recu. Un conseiller Mercedes-Benz prendra en charge votre demande dans quelques instants. Merci de votre patience."
+      }
+    },
+    {
+      "name": "split_first",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "send_message_non_compris",
+          "event": "noMatch"
+        },
+        {
+          "next": "run_subflow_final",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value contains mercedes",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "contains",
+              "value": "mercedes"
+            }
+          ]
+        },
+        {
+          "next": "run_subflow_ameliorer",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to Mercedes-Benz",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "Mercedes-Benz"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{trigger.message.Body}}",
+        "offset": {
+          "x": -60,
+          "y": 120
+        }
+      }
+    },
+    {
+      "name": "send_message_non_compris",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "complete_conversation_no_match",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -360,
+          "y": 380
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Desolé, je n'ai pas compris votre message. Pour demarrer une conversation avec Mercedes-Benz, veuillez taper 'mercedes' ou 'Mercedes-Benz'."
+      }
+    },
+    {
+      "name": "complete_conversation_no_match",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "event": "success"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -360,
+          "y": 580
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "add_twilio_auth": false,
+        "parameters": [
+          {
+            "key": "conversation_id",
+            "value": "{{flow.variables.conversation_id}}"
+          }
+        ],
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/complete"
+      }
+    },
+    {
+      "name": "run_subflow_final",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "event": "completed"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FWd86ff8b300bff4355cbc57c7f5e44765",
+        "flow_revision": "LatestPublished",
+        "parameters": [
+          {
+            "key": "conversation_id",
+            "value": "{{flow.variables.conversation_id}}"
+          },
+          {
+            "key": "session_id",
+            "value": "{{flow.variables.session_id}}"
+          },
+          {
+            "key": "phone_number",
+            "value": "{{flow.variables.phone_number}}"
+          }
+        ],
+        "offset": {
+          "x": 90,
+          "y": 550
+        }
+      }
+    },
+    {
+      "name": "run_subflow_ameliorer",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "event": "completed"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FWb5d97a6605a6bfd1340f9fc6d5a21ce2",
+        "flow_revision": "LatestPublished",
+        "parameters": [
+          {
+            "key": "conversation_id",
+            "value": "{{flow.variables.conversation_id}}"
+          },
+          {
+            "key": "session_id",
+            "value": "{{flow.variables.session_id}}"
+          },
+          {
+            "key": "phone_number",
+            "value": "{{flow.variables.phone_number}}"
+          }
+        ],
+        "offset": {
+          "x": 610,
+          "y": 520
+        }
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}

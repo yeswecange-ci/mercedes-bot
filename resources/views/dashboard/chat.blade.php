@@ -54,7 +54,7 @@
             <!-- Messages Container -->
             <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
                 @forelse($conversation->events()->orderBy('created_at', 'asc')->get() as $event)
-                    @if($event->event_type === 'message_received' || $event->user_input)
+                    @if($event->event_type === 'message_received' && $event->user_input)
                         <!-- Client Message -->
                         <div class="flex items-start">
                             <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-medium">
@@ -62,7 +62,7 @@
                             </div>
                             <div class="ml-3 flex-1">
                                 <div class="bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200 inline-block max-w-lg">
-                                    <p class="text-sm text-gray-900">{{ $event->user_input ?? $event->bot_message }}</p>
+                                    <p class="text-sm text-gray-900">{{ $event->user_input }}</p>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">{{ $event->created_at->format('H:i') }}</p>
                             </div>

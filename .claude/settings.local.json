@@ -13,7 +13,15 @@
       "Bash(php artisan:*)",
       "Bash(php artisan cache:clear:*)",
       "Bash(npm install)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Add complete Twilio WhatsApp integration and agent chat system\n\nMajor Features:\n- Twilio SDK v8.8.7 integration for WhatsApp messaging\n- Complete agent chat system (no Chatwoot/n8n dependency)\n- Real-time conversation management dashboard\n- Agent takeover and direct client communication\n\nBackend Implementation:\n- TwilioWebhookController: 6 API endpoints for Twilio integration\n- ChatController: Agent chat interface with 4 routes\n- Enhanced Conversation model with agent_id relationship\n- Agent mode detection and conversation state management\n- Migration for agent_id column\n\nFrontend:\n- Agent chat interface with auto-refresh (5s)\n- Conversation list with filtering (all/active/transferred/completed)\n- Client information sidebar\n- Message history display\n- Take-over and close conversation workflows\n\nDeployment:\n- .nixpacks.toml for PHP 8.3 on Coolify\n- Comprehensive documentation suite:\n  * QUICK_START.md: 3-step deployment guide\n  * DEPLOYMENT_CHECKLIST.md: Complete deployment instructions\n  * INTEGRATION_FLOW_GUIDE.md: Non-destructive Twilio Flow integration\n  * AGENT_CHAT_SYSTEM.md: Agent chat system documentation\n  * SETUP_COMPLETE.md: Complete setup overview\n  * TWILIO_INTEGRATION_GUIDE.md: Twilio configuration guide\n\nTwilio Flows:\n- twilio-flow-agent-mode.json: Flow with agent mode support\n- twilio-flow-complete-integrated.json: Full integrated flow\n- twilio-flow-updated.json: Updated flow configuration\n\nAll credentials replaced with placeholders for security.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:mbbot-dashboard.ywcdigital.com)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
