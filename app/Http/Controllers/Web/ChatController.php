@@ -151,7 +151,7 @@ class ChatController extends Controller
             'status' => 'completed',
             'ended_at' => now(),
             'duration_seconds' => $conversation->started_at ?
-                now()->diffInSeconds($conversation->started_at) : null,
+                $conversation->started_at->diffInSeconds(now()) : null,
         ]);
 
         // Log the closure event
