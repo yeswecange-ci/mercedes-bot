@@ -3,38 +3,69 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\TwilioWebhookController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes - Mercedes-Benz Bot Dashboard
 |--------------------------------------------------------------------------
 |
-| Routes pour recevoir les événements du bot Twilio (via n8n)
+| Routes pour recevoir les événements du bot Twilio
 | et pour alimenter le dashboard de supervision.
 |
 */
 
 /*
 |--------------------------------------------------------------------------
-| Webhooks (depuis n8n)
+| Twilio Webhooks (Direct Integration)
+|--------------------------------------------------------------------------
+| Ces routes reçoivent les données directement depuis Twilio Flow
+| Elles peuvent être appelées sans authentification pour les webhooks
+*/
+Route::prefix('twilio')->group(function () {
+
+    // Message entrant WhatsApp
+    Route::post('/incoming', [TwilioWebhookController::class, 'handleIncomingMessage']);
+
+    // Choix de menu
+    Route::post('/menu-choice', [TwilioWebhookController::class, 'handleMenuChoice']);
+
+    // Saisie libre utilisateur
+    Route::post('/free-input', [TwilioWebhookController::class, 'handleFreeInput']);
+
+    // Transfert vers agent
+    Route::post('/agent-transfer', [TwilioWebhookController::class, 'handleAgentTransfer']);
+
+    // Fin de conversation
+    Route::post('/complete', [TwilioWebhookController::class, 'completeConversation']);
+
+    // Envoyer un message (pour le dashboard)
+    Route::post('/send-message', [TwilioWebhookController::class, 'sendMessage'])
+        ->middleware(['auth:sanctum']);
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Webhooks (depuis n8n) - Legacy
 |--------------------------------------------------------------------------
 | Ces routes reçoivent les données du bot Twilio via n8n
 | Elles doivent être protégées par un token API
 */
 Route::prefix('webhook')->group(function () {
-    
+
     // Événement générique (choix menu, saisie, message, etc.)
     Route::post('/event', [WebhookController::class, 'handleEvent']);
-    
+
     // Mise à jour des données utilisateur (nom, email, etc.)
     Route::post('/user-data', [WebhookController::class, 'updateUserData']);
-    
+
     // Notification de transfert vers Chatwoot
     Route::post('/transfer', [WebhookController::class, 'handleTransfer']);
-    
+
     // Fin de conversation
     Route::post('/complete', [WebhookController::class, 'handleComplete']);
-    
+
 });
 
 /*

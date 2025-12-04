@@ -158,9 +158,24 @@
                         {{ $conversation->created_at->format('d/m/Y H:i') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="{{ route('dashboard.show', $conversation->id) }}" class="text-primary-600 hover:text-primary-900 transition-colors duration-200">
-                            Détails →
-                        </a>
+                        <div class="flex items-center justify-end space-x-3">
+                            @if($conversation->status === 'transferred')
+                                <a href="{{ route('dashboard.chat.show', $conversation->id) }}" class="inline-flex items-center px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                    </svg>
+                                    Chat
+                                </a>
+                            @elseif($conversation->status === 'active')
+                                <a href="{{ route('dashboard.chat.show', $conversation->id) }}" class="text-primary-600 hover:text-primary-900 transition-colors duration-200">
+                                    Prendre en charge →
+                                </a>
+                            @else
+                                <a href="{{ route('dashboard.show', $conversation->id) }}" class="text-primary-600 hover:text-primary-900 transition-colors duration-200">
+                                    Détails →
+                                </a>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

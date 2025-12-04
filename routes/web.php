@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Web\DashboardWebController;
+use App\Http\Controllers\Web\ChatController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,4 +53,12 @@ Route::middleware('auth')->group(function () {
 
     // Search Free Inputs
     Route::get('/dashboard/search', [DashboardWebController::class, 'search'])->name('dashboard.search');
+
+    // Chat Routes (Agent Communication)
+    Route::prefix('dashboard/chat')->name('dashboard.chat.')->group(function () {
+        Route::get('/{id}', [ChatController::class, 'show'])->name('show');
+        Route::post('/{id}/take-over', [ChatController::class, 'takeOver'])->name('take-over');
+        Route::post('/{id}/send', [ChatController::class, 'send'])->name('send');
+        Route::post('/{id}/close', [ChatController::class, 'close'])->name('close');
+    });
 });

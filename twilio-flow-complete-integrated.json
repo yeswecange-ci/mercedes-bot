@@ -1,0 +1,2794 @@
+{
+  "description": "Mercedes-Benz WhatsApp Bot - Intégré avec Laravel Dashboard (Flow Complet)",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "next": "send_to_laravel_incoming",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "next": "send_to_laravel_incoming",
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "name": "send_to_laravel_incoming",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "check_agent_mode",
+          "event": "success"
+        },
+        {
+          "next": "send_message_welcome",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 120
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/incoming",
+        "parameters": [
+          {
+            "value": "{{trigger.message.From}}",
+            "key": "From"
+          },
+          {
+            "value": "{{trigger.message.Body}}",
+            "key": "Body"
+          },
+          {
+            "value": "{{trigger.message.MessageSid}}",
+            "key": "MessageSid"
+          },
+          {
+            "value": "{{trigger.message.ProfileName}}",
+            "key": "ProfileName"
+          }
+        ]
+      }
+    },
+    {
+      "name": "check_agent_mode",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "agent_mode_notification",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If agent_mode is true",
+              "arguments": [
+                "{{widgets.send_to_laravel_incoming.parsed.agent_mode}}"
+              ],
+              "type": "equal_to",
+              "value": "true"
+            }
+          ]
+        },
+        {
+          "next": "send_message_welcome",
+          "event": "noMatch"
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_to_laravel_incoming.parsed.agent_mode}}",
+        "offset": {
+          "x": 0,
+          "y": 180
+        }
+      }
+    },
+    {
+      "name": "agent_mode_notification",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -300,
+          "y": 240
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Votre message a été reçu. Un agent Mercedes-Benz vous répondra sous peu."
+      }
+    },
+    {
+      "name": "send_message_welcome",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "function_2",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 310,
+          "y": 240
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Bonjour et bienvenue sur la chaîne WhatsApp MERCEDES-BENZ by CFAO 👋\n Je suis votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?"
+      }
+    },
+    {
+      "name": "send_and_reply_menu_prin",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "send_and_reply_nomprenom",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 500
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Choisissez une option :\n 1 : Véhicules neufs\n 2 : Service après-vente\n 3 : Réclamations\n 4 : Club VIP Mercedes-Benz\n 5 : Parler à un agent Mercedes-Benz",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "send_and_reply_nomprenom",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "save_nomprenom",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -10,
+          "y": 810
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Quels sont vos nom et prénom ?",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "save_nomprenom",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_clien_yn",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_clien_yn",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -10,
+          "y": 980
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_and_reply_nomprenom.inbound.Body}}",
+            "key": "user_input"
+          },
+          {
+            "value": "nom_prenom",
+            "key": "widget_name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_and_reply_clien_yn",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "save_client_status",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -20,
+          "y": 1130
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Êtes-vous déjà client(e) Mercedes-Benz ?\n- Oui\n- Non",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "save_client_status",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "split_1",
+          "event": "success"
+        },
+        {
+          "next": "split_1",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -20,
+          "y": 1300
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_and_reply_clien_yn.inbound.Body}}",
+            "key": "user_input"
+          },
+          {
+            "value": "is_client",
+            "key": "widget_name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "split_1",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "save_menu_choice_vn",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_prin.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "save_menu_choice_sav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_prin.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "save_menu_choice_reclamation",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_prin.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "next": "save_menu_choice_vip",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 4",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_prin.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "next": "save_menu_choice_agent",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 5",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_prin.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_menu_prin.inbound.Body}}",
+        "offset": {
+          "x": -50,
+          "y": 1430
+        }
+      }
+    },
+    {
+      "name": "save_menu_choice_vn",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_vn",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_vn",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1310,
+          "y": 1550
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/menu-choice",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "vehicules_neufs",
+            "key": "menu_choice"
+          },
+          {
+            "value": "{{widgets.send_and_reply_menu_prin.inbound.Body}}",
+            "key": "user_input"
+          }
+        ]
+      }
+    },
+    {
+      "name": "save_menu_choice_sav",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_option2_sav",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_option2_sav",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 710,
+          "y": 1700
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/menu-choice",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "service_apres_vente",
+            "key": "menu_choice"
+          },
+          {
+            "value": "{{widgets.send_and_reply_menu_prin.inbound.Body}}",
+            "key": "user_input"
+          }
+        ]
+      }
+    },
+    {
+      "name": "save_menu_choice_reclamation",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_3_5_sav",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_3_5_sav",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1730,
+          "y": 520
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/menu-choice",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "reclamations",
+            "key": "menu_choice"
+          },
+          {
+            "value": "{{widgets.send_and_reply_menu_prin.inbound.Body}}",
+            "key": "user_input"
+          }
+        ]
+      }
+    },
+    {
+      "name": "save_menu_choice_vip",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_fidelite",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_fidelite",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 4080,
+          "y": 1970
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/menu-choice",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "club_vip",
+            "key": "menu_choice"
+          },
+          {
+            "value": "{{widgets.send_and_reply_menu_prin.inbound.Body}}",
+            "key": "user_input"
+          }
+        ]
+      }
+    },
+    {
+      "name": "save_menu_choice_agent",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_3_5_sav",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_3_5_sav",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1730,
+          "y": 420
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/agent-transfer",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "user_requested",
+            "key": "reason"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_and_reply_vn",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_vn",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1310,
+          "y": 1680
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Vous souhaitez en savoir plus sur nos véhicules neufs ? Voici ce que nous vous proposons :\n 1 :  Notre catalogue\n 2 :  Essai de conduite\n 3 :  Être contacté par un conseiller commercial\n 4 :  Garantie constructeur\n 5 :  Retour au menu principal",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_vn",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_message_catalogue",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_vn.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_message_essai_routier",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_vn.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_vn_option3",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_vn.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_vn_option4",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 4",
+              "arguments": [
+                "{{widgets.send_and_reply_vn.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 5",
+              "arguments": [
+                "{{widgets.send_and_reply_vn.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_vn.inbound.Body}}",
+        "offset": {
+          "x": -810,
+          "y": 2050
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_question_catalogue",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_after_catalogue",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1460,
+          "y": 2670
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Souhaitez-vous avoir plus de détails sur notre gamme ?\n1 : Oui\n2 : Non",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "send_message_catalogue",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "function_wait",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1460,
+          "y": 2290
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous avons le plaisir de vous faire découvrir notre gamme de véhicules MERCEDES-BENZ :\nTéléchargez notre brochure ici :",
+        "media_url": "https://mercedes-9755.twil.io/G_Klasse_W465_ePaper_24_1_02_ENG.pdf"
+      }
+    },
+    {
+      "name": "split_after_catalogue",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_message_oui_question_catalogue",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value contains oui",
+              "arguments": [
+                "{{widgets.send_and_reply_question_catalogue.inbound.Body}}"
+              ],
+              "type": "contains",
+              "value": "oui"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_fin_catalogue",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value contains non",
+              "arguments": [
+                "{{widgets.send_and_reply_question_catalogue.inbound.Body}}"
+              ],
+              "type": "contains",
+              "value": "non"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_fin_catalogue",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_question_catalogue.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_message_oui_question_catalogue",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_question_catalogue.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_question_catalogue.inbound.Body}}",
+        "offset": {
+          "x": -1700,
+          "y": 2980
+        }
+      }
+    },
+    {
+      "name": "send_message_oui_question_catalogue",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_fin_catalogue",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1850,
+          "y": 3240
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Cliquez sur ce lien pour en savoir plus :\n https://www.mercedes-benz-rci.com/fr/concession \n Ou appelez le 07 01 52 52 52."
+      }
+    },
+    {
+      "name": "send_and_reply_fin_catalogue",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_fin_catalogue",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1110,
+          "y": 3600
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "1 : Retour au menu « Véhicules neufs »\n2 :  Retour au menu principal\n3 :  Quitter l'assistant Mercedes-Benz by CFAO",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_send_and_reply_fin_catalogue",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_vn",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_fin_catalogue.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_fin_catalogue.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_message_fin_vn",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_fin_catalogue.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_fin_catalogue.inbound.Body}}",
+        "offset": {
+          "x": -1750,
+          "y": 4020
+        }
+      }
+    },
+    {
+      "name": "send_message_fin_vn",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "complete_conversation",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -460,
+          "y": 4960
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous vous remercions pour votre demande.\nNous restons joignables au  07 01 52 52 52"
+      }
+    },
+    {
+      "name": "complete_conversation",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "event": "success"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -460,
+          "y": 5150
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/complete",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_and_reply_vn_option3",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "save_vn_option3_data",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -510,
+          "y": 2710
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Veuillez saisir vos nom, prénom, numéro de téléphone et adresse e-mail, séparés par des virgules.",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "save_vn_option3_data",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_message_suite_vn_agent_humain",
+          "event": "success"
+        },
+        {
+          "next": "send_message_suite_vn_agent_humain",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -510,
+          "y": 2900
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_and_reply_vn_option3.inbound.Body}}",
+            "key": "user_input"
+          },
+          {
+            "value": "contact_conseiller",
+            "key": "widget_name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_and_reply_vn_option4",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_garantie_construc",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 80,
+          "y": 2680
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Souhaitez-vous avoir plus de détails sur :\n1 : Garantie constructeur",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_garantie_construc",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_message_garan_contruct",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_vn_option4.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_vn_option4.inbound.Body}}",
+        "offset": {
+          "x": -30,
+          "y": 3110
+        }
+      }
+    },
+    {
+      "name": "send_message_suite_vn_agent_humain",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_fin_catalogue",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -580,
+          "y": 3480
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Votre demande a bien été prise en compte, vous serez contacté(e) dans les 24 heures (jours ouvrables)."
+      }
+    },
+    {
+      "name": "send_message_garan_contruct",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply__garan_contruct",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -70,
+          "y": 3590
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "La garantie du constructeur Mercedes-Benz, qui couvre uniquement les pannes liées à des défauts de fabrication de votre véhicule Mercedes-Benz, est valable 2 ans à compter de la date de réception de votre véhicule."
+      }
+    },
+    {
+      "name": "send_and_reply__garan_contruct",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_garan_contruct",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -60,
+          "y": 3880
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Nous espérons que ces informations vous ont été utiles :\n 1 :  Retour au menu « Garantie et contrats d'entretien »\n 2 :  Retour au menu « Véhicules neufs »\n 3 :  Retour au menu principal\n 4 :  Quitter l'assistant Mercedes-Benz by CFAO",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_garan_contruct",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_vn_option4",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply__garan_contruct.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_vn",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply__garan_contruct.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply__garan_contruct.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "next": "send_message_fin_vn",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 4",
+              "arguments": [
+                "{{widgets.send_and_reply__garan_contruct.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "4"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply__garan_contruct.inbound.Body}}",
+        "offset": {
+          "x": -310,
+          "y": 4160
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_option2_sav",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_option2_sav",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 710,
+          "y": 2220
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Vous souhaitez en savoir plus sur notre service après-vente ?\nVeuillez choisir une option : \n1 : Entretien & maintenance\n2 : Réparation\n3 : Pièces d'origine (et de rechange)\n4 :  Programme fidélité – Informations générales SAV / Nos offres\n5 : Retour au menu principal",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_option2_sav",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_2_entretien",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_option2_sav.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_reparation",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_option2_sav.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_option2_sav.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 4",
+              "arguments": [
+                "{{widgets.send_and_reply_option2_sav.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 5",
+              "arguments": [
+                "{{widgets.send_and_reply_option2_sav.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_option2_sav.inbound.Body}}",
+        "offset": {
+          "x": 700,
+          "y": 5360
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_3_5_sav",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "save_reclamation_data",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1730,
+          "y": 650
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Veuillez renseigner votre nom, prénom, numéro de téléphone, numéro de carte VIP Mercedes, votre VIN (si possible), ainsi qu'un résumé de l'objet de votre réclamation. \nUn conseiller se chargera de vous répondre dans les plus brefs délais.",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "save_reclamation_data",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_message_final_3_5",
+          "event": "success"
+        },
+        {
+          "next": "send_message_final_3_5",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1730,
+          "y": 830
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_and_reply_3_5_sav.inbound.Body}}",
+            "key": "user_input"
+          },
+          {
+            "value": "reclamation_agent",
+            "key": "widget_name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_message_final_3_5",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_fin_3_5",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1720,
+          "y": 980
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Votre réclamation a bien été enregistrée. Merci et à bientôt."
+      }
+    },
+    {
+      "name": "send_and_reply_fin_3_5",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_final35",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1700,
+          "y": 1320
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "1 : retour au menu principal \n2 : Quitter l'assistant MERCEDES-BENZ By CFAO",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_final35",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_fin_3_5.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_message_bye_sav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_fin_3_5.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_fin_3_5.inbound.Body}}",
+        "offset": {
+          "x": 1650,
+          "y": 1530
+        }
+      }
+    },
+    {
+      "name": "send_message_bye_sav",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "complete_conversation",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 2090,
+          "y": 2370
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous vous remercions pour votre demande\nNous restons joignables au 07 01 52 52 52"
+      }
+    },
+    {
+      "name": "send_and_reply_fidelite",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_check_fidelite",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 4080,
+          "y": 2100
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Vous souhaitez :\n1 : Comprendre le fonctionnement du club \n2 : Demander une information à un agent\n3 : Retourner au menu principal",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_check_fidelite",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_foncclubvip",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_fidelite.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_vipdemandagent",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_fidelite.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_fidelite.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_fidelite.inbound.Body}}",
+        "offset": {
+          "x": 3660,
+          "y": 2540
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_vipdemandagent",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "save_vip_demand_data",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 3220,
+          "y": 3010
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Veuillez renseigner votre nom, prénom, numéro de châssis (VIN) et préoccupations brièvement. Un conseiller se chargera de vous répondre dans les plus brefs délais.",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "save_vip_demand_data",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_message_afterfonclubvip",
+          "event": "success"
+        },
+        {
+          "next": "send_message_afterfonclubvip",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 3220,
+          "y": 3180
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_and_reply_vipdemandagent.inbound.Body}}",
+            "key": "user_input"
+          },
+          {
+            "value": "vip_agent_request",
+            "key": "widget_name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_message_afterfonclubvip",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_choixquiteclubvip",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 3700,
+          "y": 3260
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Votre demande a bien été enregistrée. Un conseiller service vous contactera dans moins de 24h (jour ouvrable). Merci et à bientôt."
+      }
+    },
+    {
+      "name": "send_and_reply_choixquiteclubvip",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_choixquiteclubvip",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 3200,
+          "y": 3960
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "1 : Retour au menu principal \n2 : Quitter l'assistant MERCEDES-BENZ By CFAO",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_send_and_reply_choixquiteclubvip",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_choixquiteclubvip.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_message_fin_vn",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_choixquiteclubvip.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_choixquiteclubvip.inbound.Body}}",
+        "offset": {
+          "x": 3160,
+          "y": 4170
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_foncclubvip",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_foncclubvip",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 2750,
+          "y": 2820
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Vous souhaitez en savoir plus sur notre programme fidélité\n1 : Conditions générales\n2 : Avantages\n3 : Comment souscrire",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_send_and_reply_foncclubvip",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_message_how_the_club_works",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_foncclubvip.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_message_bye_sav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_foncclubvip.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_foncclubvip.inbound.Body}}",
+        "offset": {
+          "x": 2470,
+          "y": 3080
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_2_entretien",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_2_entretien",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 50,
+          "y": 5680
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Sélectionnez votre option :\n 1 : Prise de rendez-vous en atelier\n 2 : Discuter avec un agent via WhatsApp\n 3 : Appeler l'atelier\n 4 : Forfait d'entretien\n 5 : Retour au menu Service après-vente",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "send_and_reply_reparation",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_reparation",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 960,
+          "y": 6020
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Comment pouvons-nous vous aider ?\n1 : Réparer mon véhicule\n2 : Suivre mon véhicule\n3 : Prise de rendez-vous",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_send_and_reply_2_entretien",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_message_rdvonline",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_2_entretien.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_message_contact_agent",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_2_entretien.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_message_appel_atelier",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_2_entretien.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "next": "send_message_brochureint",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 4",
+              "arguments": [
+                "{{widgets.send_and_reply_2_entretien.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_option2_sav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 5",
+              "arguments": [
+                "{{widgets.send_and_reply_2_entretien.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_2_entretien.inbound.Body}}",
+        "offset": {
+          "x": -1000,
+          "y": 6040
+        }
+      }
+    },
+    {
+      "name": "split_send_and_reply_reparation",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_suitereparation",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_reparation.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_suitereparation",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_reparation.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_suitereparation",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_reparation.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_reparation.inbound.Body}}",
+        "offset": {
+          "x": 1200,
+          "y": 6430
+        }
+      }
+    },
+    {
+      "name": "send_and_reply_suitereparation",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "save_reparation_data",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1310,
+          "y": 7020
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Veuillez renseigner votre nom, prénom, numéro de téléphone, numéro de carte VIP Mercedes, votre VIN (si possible), ainsi qu'un résumé de l'objet de votre réclamation.",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "save_reparation_data",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "send_and_reply_suitereparation2",
+          "event": "success"
+        },
+        {
+          "next": "send_and_reply_suitereparation2",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1310,
+          "y": 7200
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_and_reply_suitereparation.inbound.Body}}",
+            "key": "user_input"
+          },
+          {
+            "value": "reparation_info",
+            "key": "widget_name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send_and_reply_suitereparation2",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_suitereparation2",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1160,
+          "y": 7860
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Nous espérons que ces informations vous ont été utiles :\n1 : Retour au menu service-après-vente\n2 : retour au menu principal \n3 : Quitter l'assistant MERCEDES-BENZ By CFAO",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_send_and_reply_suitereparation2",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_option2_sav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_suitereparation2.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_suitereparation2.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_message_byesav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_suitereparation2.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_suitereparation2.inbound.Body}}",
+        "offset": {
+          "x": 1170,
+          "y": 8490
+        }
+      }
+    },
+    {
+      "name": "send_message_byesav",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "complete_conversation",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 2010,
+          "y": 8910
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "A très bientôt, notre équipe SAV reste  joignable au 07 01 52 52 52"
+      }
+    },
+    {
+      "name": "send_message_rdvonline",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_after_priserdv",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1820,
+          "y": 6700
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Cliquez sur le lien ci-dessous :\nhttps://www.mercedes-benz-rci.com/fr/concession"
+      }
+    },
+    {
+      "name": "send_and_reply_after_priserdv",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_send_and_reply_after_priserdv",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1480,
+          "y": 7570
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "1 : Retour au menu Prise de RDV\n2 : Retour au menu Service après-vente\n3 : retour au menu principal \n4 : Quitter l'assistant MERCEDES-BENZ By",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_send_and_reply_after_priserdv",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_and_reply_2_entretien",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_after_priserdv.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_option2_sav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_after_priserdv.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 3",
+              "arguments": [
+                "{{widgets.send_and_reply_after_priserdv.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "next": "send_message_byesav",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 4",
+              "arguments": [
+                "{{widgets.send_and_reply_after_priserdv.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "4"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_after_priserdv.inbound.Body}}",
+        "offset": {
+          "x": -280,
+          "y": 7900
+        }
+      }
+    },
+    {
+      "name": "send_message_contact_agent",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_after_priserdv",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1400,
+          "y": 6700
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Veuillez renseigner :\n\nvos nom et prénom,\n \nvotre numéro de téléphone,\n \nvotre numéro de carte VIP Mercedes-Benz,\n \nvotre VIN (si possible),\n \nun résumé de l'objet de votre réclamation."
+      }
+    },
+    {
+      "name": "send_message_appel_atelier",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "send_and_reply_after_priserdv",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -940,
+          "y": 6720
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "content_template",
+        "to": "{{contact.channel.address}}",
+        "content_sid": "HXe354f0df1ce4c76a29ee7bed4a813d5a",
+        "body": "Appelez le numéro suivant 0709174100"
+      }
+    },
+    {
+      "name": "send_message_brochureint",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "Copy_of_function_3",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -510,
+          "y": 6720
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous avons le plaisir de vous faire découvrir tous nos forfaits d'entretien Mercedes-Benz.\nTéléchargez notre brochure ici :",
+        "media_url": "https://merco-9614.twil.io/Forfaits%20entretien%20Mercedes-benz%20by%20CFAO.pdf"
+      }
+    },
+    {
+      "name": "function_wait",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_question_catalogue",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": -2090,
+          "y": 2520
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    },
+    {
+      "name": "function_2",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_menu_prin",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": -580,
+          "y": 246
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    },
+    {
+      "name": "send_message_essai_routier",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "function_wait_essai",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -830,
+          "y": 2940
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Pour réserver votre essai, cliquez sur le lien ci-dessous : \nhttps://www.mercedes-benz-rci.com/fr/concession?form=reserver-un-essai"
+      }
+    },
+    {
+      "name": "function_wait_essai",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_fin_catalogue",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": -870,
+          "y": 3280
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    },
+    {
+      "name": "send_message_how_the_club_works",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "function_delay",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 2050,
+          "y": 3070
+        },
+        "shorten_urls": true,
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous avons le plaisir de vous faire découvrir notre notice de fonctionnement Club VIP MERCEDES-BENZ :\nTéléchargez notre brochure ici :",
+        "media_url": "https://topaz-bullfrog-4509.twil.io/assets/Notice%20de%20fonctionnement%20-%20Club%20VIP%20Mercedes-Benz%20by%20CFAO.pdf"
+      }
+    },
+    {
+      "name": "send_and_reply_menu_forfait_vip_and_catalog_vip",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_menu_forfait_vip_catalog_vip",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1830,
+          "y": 3460
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "body": "Souhaitez-vous avoir plus de détails sur le Club VIP MERCEDES-BENZ ?\n1 : Forfait et entretien\n2 : Voir le catalogue",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "split_menu_forfait_vip_catalog_vip",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "send_message_forfait_vip",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_forfait_vip_and_catalog_vip.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "send_message_catalog_vip",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 2",
+              "arguments": [
+                "{{widgets.send_and_reply_menu_forfait_vip_and_catalog_vip.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.send_and_reply_menu_forfait_vip_and_catalog_vip.inbound.Body}}",
+        "offset": {
+          "x": 2190,
+          "y": 3520
+        }
+      }
+    },
+    {
+      "name": "send_message_forfait_vip",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "function_3",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 2370,
+          "y": 3790
+        },
+        "shorten_urls": true,
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous avons le plaisir de vous faire découvrir notre forfait entretien Club VIP MERCEDES-BENZ :\nTéléchargez notre brochure ici :",
+        "media_url": "https://topaz-bullfrog-4509.twil.io/assets/Forfaits%20entretien%20Mercedes-benz%20by%20CFAO.pdf"
+      }
+    },
+    {
+      "name": "send_message_catalog_vip",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "function_4",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 2780,
+          "y": 3390
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "message_type": "custom",
+        "to": "{{contact.channel.address}}",
+        "body": "Nous avons le plaisir de vous faire découvrir notre catalogue de véhicules Club VIP MERCEDES-BENZ :\nTéléchargez notre brochure ici :",
+        "media_url": "https://topaz-bullfrog-4509.twil.io/assets/Catalogue%20Mercedes-benz%20by%20CFAO.pdf"
+      }
+    },
+    {
+      "name": "function_delay",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_menu_forfait_vip_and_catalog_vip",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": 1700,
+          "y": 3130
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    },
+    {
+      "name": "function_3",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_choixquiteclubvip",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": 2520,
+          "y": 4050
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    },
+    {
+      "name": "function_4",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_choixquiteclubvip",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": 2860,
+          "y": 3670
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    },
+    {
+      "name": "Copy_of_function_3",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_and_reply_after_priserdv",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+        "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+        "offset": {
+          "x": -560,
+          "y": 7310
+        },
+        "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+        "url": "https://merco-9614.twil.io/add_delay"
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}

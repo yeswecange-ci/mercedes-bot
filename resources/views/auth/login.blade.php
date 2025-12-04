@@ -9,9 +9,9 @@
         <div class="w-full max-w-md space-y-8">
             <!-- Logo & Header -->
             <div class="text-center">
-                <div class="flex justify-center">
+                {{-- <div class="flex justify-center">
                     <img src="{{ asset('images/logomercedes.png') }}" alt="Mercedes-Benz" class="h-24 w-24 object-contain">
-                </div>
+                </div> --}}
                 <h2 class="mt-6 text-3xl font-bold text-gray-900">
                     Bienvenue
                 </h2>

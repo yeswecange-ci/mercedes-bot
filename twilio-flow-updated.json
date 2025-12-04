@@ -1,0 +1,246 @@
+{
+  "description": "Mercedes-Benz WhatsApp Bot - Intégré avec Laravel Dashboard",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "next": "send_to_laravel_incoming",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "name": "send_to_laravel_incoming",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "check_keyword_mercedes",
+          "event": "success"
+        },
+        {
+          "next": "error_handler",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 230
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/incoming",
+        "parameters": [
+          {
+            "value": "{{trigger.message.From}}",
+            "key": "From"
+          },
+          {
+            "value": "{{trigger.message.Body}}",
+            "key": "Body"
+          },
+          {
+            "value": "{{trigger.message.MessageSid}}",
+            "key": "MessageSid"
+          },
+          {
+            "value": "{{trigger.message.ProfileName}}",
+            "key": "ProfileName"
+          }
+        ]
+      }
+    },
+    {
+      "name": "check_keyword_mercedes",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "send_welcome_message",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value contains mercedes",
+              "arguments": [
+                "{{trigger.message.Body | downcase}}"
+              ],
+              "type": "contains",
+              "value": "mercedes"
+            }
+          ]
+        },
+        {
+          "next": "send_welcome_message",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value contains bonjour",
+              "arguments": [
+                "{{trigger.message.Body | downcase}}"
+              ],
+              "type": "contains",
+              "value": "bonjour"
+            }
+          ]
+        },
+        {
+          "next": "send_welcome_message",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value contains hello",
+              "arguments": [
+                "{{trigger.message.Body | downcase}}"
+              ],
+              "type": "contains",
+              "value": "hello"
+            }
+          ]
+        },
+        {
+          "event": "noMatch"
+        }
+      ],
+      "properties": {
+        "input": "{{trigger.message.Body}}",
+        "offset": {
+          "x": 0,
+          "y": 460
+        }
+      }
+    },
+    {
+      "name": "send_welcome_message",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "run_main_subflow",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 690
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Bienvenue chez Mercedes-Benz Maroc ! 🚗\n\nJe suis votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?"
+      }
+    },
+    {
+      "name": "run_main_subflow",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "next": "complete_conversation",
+          "event": "completed"
+        },
+        {
+          "next": "error_handler",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FWd86ff8b300bff4355cbc57c7f5e44765",
+        "flow_revision": "LatestPublished",
+        "offset": {
+          "x": 0,
+          "y": 920
+        },
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          },
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.session_id}}",
+            "key": "session_id"
+          },
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.phone_number}}",
+            "key": "phone_number"
+          }
+        ]
+      }
+    },
+    {
+      "name": "complete_conversation",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "event": "success"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 1150
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+        "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/complete",
+        "parameters": [
+          {
+            "value": "{{widgets.send_to_laravel_incoming.parsed.conversation_id}}",
+            "key": "conversation_id"
+          }
+        ]
+      }
+    },
+    {
+      "name": "error_handler",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 300,
+          "y": 690
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Désolé, une erreur s'est produite. Veuillez réessayer ou contacter notre support."
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}
