@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TwilioWebhookController;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,24 @@ use App\Http\Controllers\Api\TwilioWebhookController;
 | et pour alimenter le dashboard de supervision.
 |
 */
+
+/*
+|--------------------------------------------------------------------------
+| Authentication API Routes (for Postman, mobile apps, etc.)
+|--------------------------------------------------------------------------
+| Ces routes utilisent Sanctum pour l'authentification via token
+| Pas de vérification CSRF - parfait pour Postman et les tests
+*/
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+
+    // Routes protégées
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
+});
 
 /*
 |--------------------------------------------------------------------------

@@ -58,15 +58,17 @@
 							"raw": "{\n    \"email\": \"admin@mercedes-bot.com\",\n    \"password\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/login",
+							"raw": "{{base_url}}/api/auth/login",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
+								"auth",
 								"login"
 							]
 						},
-						"description": "Authentification - Récupère le token Bearer"
+						"description": "Authentification API - Récupère le token Bearer (Sanctum)"
 					},
 					"response": []
 				},
@@ -92,15 +94,17 @@
 							"raw": "{\n    \"name\": \"Agent Test\",\n    \"email\": \"agent@test.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/register",
+							"raw": "{{base_url}}/api/auth/register",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
+								"auth",
 								"register"
 							]
 						},
-						"description": "Créer un nouveau compte utilisateur"
+						"description": "Créer un nouveau compte utilisateur via API"
 					},
 					"response": []
 				},
@@ -112,18 +116,53 @@
 							{
 								"key": "Accept",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/logout",
+							"raw": "{{base_url}}/api/auth/logout",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
+								"auth",
 								"logout"
 							]
 						},
-						"description": "Déconnexion - Invalide le token"
+						"description": "Déconnexion API - Invalide le token Sanctum"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Récupérer les informations de l'utilisateur authentifié"
 					},
 					"response": []
 				}
