@@ -1,0 +1,931 @@
+{
+	"info": {
+		"_postman_id": "mercedes-bot-api-2024",
+		"name": "Mercedes-Benz Bot API",
+		"description": "Collection complète pour tester tous les endpoints de l'API Mercedes-Benz Bot Dashboard",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.environment.set('access_token', jsonData.token);",
+									"        console.log('Token saved:', jsonData.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@mercedes-bot.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Authentification - Récupère le token Bearer"
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Agent Test\",\n    \"email\": \"agent@test.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"register"
+							]
+						},
+						"description": "Créer un nouveau compte utilisateur"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"logout"
+							]
+						},
+						"description": "Déconnexion - Invalide le token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Twilio Webhooks",
+			"item": [
+				{
+					"name": "Incoming Message",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"SessionId\": \"session_12345\",\n    \"From\": \"whatsapp:+225xxxxxxxx\",\n    \"Body\": \"Bonjour\",\n    \"MessageSid\": \"SM1234567890\",\n    \"ProfileName\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/twilio/incoming",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"twilio",
+								"incoming"
+							]
+						},
+						"description": "Webhook appelé par Twilio lors de la réception d'un message WhatsApp"
+					},
+					"response": []
+				},
+				{
+					"name": "Menu Choice",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"SessionId\": \"session_12345\",\n    \"MenuName\": \"menu_principal\",\n    \"Choice\": \"1\",\n    \"ChoiceLabel\": \"Prendre rendez-vous\",\n    \"From\": \"whatsapp:+225xxxxxxxx\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/twilio/menu-choice",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"twilio",
+								"menu-choice"
+							]
+						},
+						"description": "Webhook appelé lors d'un choix de menu dans le flow"
+					},
+					"response": []
+				},
+				{
+					"name": "Free Input",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"SessionId\": \"session_12345\",\n    \"FieldName\": \"nom_prenom\",\n    \"FieldLabel\": \"Nom et Prénom\",\n    \"Value\": \"Jean Dupont\",\n    \"From\": \"whatsapp:+225xxxxxxxx\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/twilio/free-input",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"twilio",
+								"free-input"
+							]
+						},
+						"description": "Webhook appelé lors d'une saisie libre (nom, email, VIN, etc.)"
+					},
+					"response": []
+				},
+				{
+					"name": "Agent Transfer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"SessionId\": \"session_12345\",\n    \"From\": \"whatsapp:+225xxxxxxxx\",\n    \"Reason\": \"Demande de contact agent\",\n    \"ChatwootConversationId\": 123\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/twilio/agent-transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"twilio",
+								"agent-transfer"
+							]
+						},
+						"description": "Webhook appelé lors d'un transfert vers un agent"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Conversation",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"SessionId\": \"session_12345\",\n    \"From\": \"whatsapp:+225xxxxxxxx\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/twilio/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"twilio",
+								"complete"
+							]
+						},
+						"description": "Webhook appelé à la fin d'une conversation"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message (Agent)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"to\": \"whatsapp:+225xxxxxxxx\",\n    \"message\": \"Bonjour, un agent va vous répondre dans quelques instants.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/twilio/send-message",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"twilio",
+								"send-message"
+							]
+						},
+						"description": "Envoyer un message WhatsApp (nécessite authentification)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Dashboard API",
+			"item": [
+				{
+					"name": "Get Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"stats"
+							]
+						},
+						"description": "Récupérer les statistiques globales du dashboard"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Conversations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/conversations?status=active&page=1&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"conversations"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "active",
+									"description": "Filtrer par status: active, completed, transferred"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "phone",
+									"value": "+225xxxxxxxx",
+									"disabled": true
+								},
+								{
+									"key": "date_from",
+									"value": "2024-01-01",
+									"disabled": true
+								},
+								{
+									"key": "date_to",
+									"value": "2024-12-31",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Liste des conversations avec filtres et pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Conversation Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/conversations/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"conversations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID de la conversation"
+								}
+							]
+						},
+						"description": "Détail complet d'une conversation avec tous les événements"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Conversations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"active"
+							]
+						},
+						"description": "Conversations actives en temps réel"
+					},
+					"response": []
+				},
+				{
+					"name": "Get History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/history?days=30",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"history"
+							],
+							"query": [
+								{
+									"key": "days",
+									"value": "30",
+									"description": "Nombre de jours d'historique"
+								}
+							]
+						},
+						"description": "Historique des statistiques quotidiennes"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Popular Paths",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/paths?limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"paths"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Parcours les plus fréquents dans le flow"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Free Inputs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/search-inputs?query=test&field=nom_prenom",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"search-inputs"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "test",
+									"description": "Terme de recherche"
+								},
+								{
+									"key": "field",
+									"value": "nom_prenom",
+									"description": "Filtrer par champ: nom_prenom, email, vin, carte_vip"
+								}
+							]
+						},
+						"description": "Recherche dans les saisies libres des utilisateurs"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Agent Chat",
+			"item": [
+				{
+					"name": "View Chat",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/html"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/chat/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"chat",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID de la conversation"
+								}
+							]
+						},
+						"description": "Afficher l'interface de chat pour une conversation (page web)"
+					},
+					"response": []
+				},
+				{
+					"name": "Take Over Conversation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/chat/:id/take-over",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"chat",
+								":id",
+								"take-over"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID de la conversation"
+								}
+							]
+						},
+						"description": "Prendre en charge une conversation (agent)"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message to Client",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Bonjour, comment puis-je vous aider ?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/dashboard/chat/:id/send",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"chat",
+								":id",
+								"send"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID de la conversation"
+								}
+							]
+						},
+						"description": "Envoyer un message au client via WhatsApp"
+					},
+					"response": []
+				},
+				{
+					"name": "Close Conversation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/chat/:id/close",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"chat",
+								":id",
+								"close"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID de la conversation"
+								}
+							]
+						},
+						"description": "Fermer une conversation (terminer l'échange avec le client)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Legacy Webhooks (n8n)",
+			"item": [
+				{
+					"name": "Generic Event",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"session_12345\",\n    \"phone_number\": \"+225xxxxxxxx\",\n    \"event_type\": \"menu_choice\",\n    \"menu_name\": \"menu_principal\",\n    \"choice\": \"1\",\n    \"choice_label\": \"Prendre rendez-vous\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/webhook/event",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"webhook",
+								"event"
+							]
+						},
+						"description": "Legacy: Événement générique depuis n8n"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Data",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"session_12345\",\n    \"nom_prenom\": \"Jean Dupont\",\n    \"email\": \"jean.dupont@example.com\",\n    \"vin\": \"WDD1234567890\",\n    \"carte_vip\": \"VIP12345\",\n    \"is_client\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/webhook/user-data",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"webhook",
+								"user-data"
+							]
+						},
+						"description": "Legacy: Mise à jour des données utilisateur"
+					},
+					"response": []
+				},
+				{
+					"name": "Handle Transfer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"session_12345\",\n    \"chatwoot_conversation_id\": 123\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/webhook/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"webhook",
+								"transfer"
+							]
+						},
+						"description": "Legacy: Notification de transfert vers Chatwoot"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete (Legacy)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"session_12345\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/webhook/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"webhook",
+								"complete"
+							]
+						},
+						"description": "Legacy: Fin de conversation"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Vérifier que l'API fonctionne"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://mbbot-dashboard.ywcdigital.com",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
