@@ -21,20 +21,19 @@ class DashboardWebController extends Controller
 
         // Get overall statistics
         $stats = [
-            'total_conversations' => Conversation::whereBetween('created_at', [$dateFrom, $dateTo])->count(),
+            'total_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])->count(),
             'active_conversations' => Conversation::active()->count(),
-            'completed_conversations' => Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+            'completed_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'completed')->count(),
-            'transferred_conversations' => Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+            'transferred_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'transferred')->count(),
-            'total_clients' => Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+            'total_clients' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('is_client', true)->distinct('phone_number')->count(),
-            'total_non_clients' => Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+            'total_non_clients' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('is_client', false)->distinct('phone_number')->count(),
-            'avg_duration' => Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+            'avg_duration' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->whereNotNull('ended_at')
-                ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, started_at, ended_at)) as avg_duration')
-                ->value('avg_duration'),
+                ->avg('duration_seconds'),
         ];
 
         // Get daily statistics for chart
@@ -53,8 +52,8 @@ class DashboardWebController extends Controller
 
         // Recent conversations
         $recentConversations = Conversation::with('events')
-            ->whereBetween('created_at', [$dateFrom, $dateTo])
-            ->orderBy('created_at', 'desc')
+            ->whereBetween('started_at', [$dateFrom, $dateTo])
+            ->orderBy('started_at', 'desc')
             ->limit(10)
             ->get();
 
@@ -75,6 +74,34 @@ class DashboardWebController extends Controller
     }
 
     /**
+     * Display conversations pending agent takeover
+     */
+    public function pending()
+    {
+        // Get conversations that are transferred but no agent assigned yet
+        // OR conversations where user explicitly requested agent (check events)
+        $pendingConversations = Conversation::where(function($query) {
+                $query->where('status', 'transferred')
+                      ->whereNull('agent_id');
+            })
+            ->orWhereHas('events', function($query) {
+                $query->where('event_type', 'agent_transfer')
+                      ->where('created_at', '>=', now()->subHours(24));
+            })
+            ->with(['events' => function($query) {
+                $query->orderBy('created_at', 'desc')->limit(5);
+            }])
+            ->orderBy('transferred_at', 'desc')
+            ->orderBy('last_activity_at', 'desc')
+            ->get();
+
+        // Count conversations waiting for agent
+        $pendingCount = $pendingConversations->count();
+
+        return view('dashboard.pending', compact('pendingConversations', 'pendingCount'));
+    }
+
+    /**
      * Display all conversations list
      */
     public function conversations(Request $request)
@@ -91,11 +118,11 @@ class DashboardWebController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->whereDate('started_at', '>=', $request->date_from);
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->whereDate('started_at', '<=', $request->date_to);
         }
 
         if ($request->filled('search')) {
@@ -107,7 +134,7 @@ class DashboardWebController extends Controller
             });
         }
 
-        $conversations = $query->orderBy('created_at', 'desc')
+        $conversations = $query->orderBy('started_at', 'desc')
             ->paginate(20)
             ->withQueryString();
 
@@ -149,14 +176,14 @@ class DashboardWebController extends Controller
         ];
 
         // Status distribution
-        $statusStats = Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+        $statusStats = Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
         // Popular paths
-        $popularPaths = Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
+        $popularPaths = Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
             ->whereNotNull('menu_path')
             ->select('menu_path', DB::raw('count(*) as count'))
             ->groupBy('menu_path')
@@ -165,8 +192,8 @@ class DashboardWebController extends Controller
             ->get();
 
         // Peak hours
-        $peakHours = Conversation::whereBetween('created_at', [$dateFrom, $dateTo])
-            ->select(DB::raw('HOUR(created_at) as hour'), DB::raw('count(*) as count'))
+        $peakHours = Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+            ->select(DB::raw('HOUR(started_at) as hour'), DB::raw('count(*) as count'))
             ->groupBy('hour')
             ->orderBy('hour', 'asc')
             ->get();

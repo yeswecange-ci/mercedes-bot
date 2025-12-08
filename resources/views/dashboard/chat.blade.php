@@ -64,12 +64,12 @@
                                 <div class="bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200 inline-block max-w-lg">
                                     <p class="text-sm text-gray-900">{{ $event->user_input }}</p>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">{{ $event->created_at->format('H:i') }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ $event->created_at->format('d/m/Y H:i') }}</p>
                             </div>
                         </div>
                     @endif
 
-                    @if($event->event_type === 'message_sent' || $event->event_type === 'agent_message')
+                    @if(($event->event_type === 'message_sent' || $event->event_type === 'agent_message') && $event->bot_message)
                         <!-- Bot/Agent Message -->
                         <div class="flex items-start justify-end">
                             <div class="mr-3 flex-1 text-right">
@@ -77,9 +77,9 @@
                                     <p class="text-sm">{{ $event->bot_message }}</p>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">
-                                    {{ $event->created_at->format('H:i') }}
+                                    {{ $event->created_at->format('d/m/Y H:i') }}
                                     @if($event->event_type === 'agent_message')
-                                        <span class="ml-1 text-primary-600 font-medium">(Vous)</span>
+                                        <span class="ml-1 text-primary-600 font-medium">(Agent)</span>
                                     @else
                                         <span class="ml-1">(Bot)</span>
                                     @endif
@@ -87,6 +87,42 @@
                             </div>
                             <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-sm font-medium">
                                 {{ $event->event_type === 'agent_message' ? 'A' : 'B' }}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($event->event_type === 'agent_takeover')
+                        <!-- System Event: Agent Takeover -->
+                        <div class="flex justify-center">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-xs text-blue-700">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                {{ $event->bot_message }} - {{ $event->created_at->format('H:i') }}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($event->event_type === 'agent_transfer')
+                        <!-- System Event: Agent Transfer Request -->
+                        <div class="flex justify-center">
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 text-xs text-orange-700">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                Le client a demandé à parler à un agent - {{ $event->created_at->format('H:i') }}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($event->event_type === 'conversation_closed')
+                        <!-- System Event: Conversation Closed -->
+                        <div class="flex justify-center">
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-xs text-gray-700">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                {{ $event->bot_message }} - {{ $event->created_at->format('H:i') }}
                             </div>
                         </div>
                     @endif

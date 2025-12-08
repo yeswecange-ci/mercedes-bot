@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Calculate daily statistics at 00:30 every day
+        $schedule->command('stats:calculate --from=-1day')
+            ->dailyAt('00:30')
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**

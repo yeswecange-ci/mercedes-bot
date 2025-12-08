@@ -28,19 +28,27 @@ class ChatController extends Controller
     {
         $conversation = Conversation::findOrFail($id);
 
-        // Check if conversation is active and not already taken
-        if ($conversation->status !== 'active') {
-            return redirect()->back()->with('error', 'Cette conversation ne peut pas être prise en charge.');
+        // Check if conversation is not already taken by another agent
+        if ($conversation->agent_id && $conversation->agent_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Cette conversation est déjà prise en charge par ' . $conversation->agent->name . '.');
         }
 
-        if ($conversation->agent_id) {
-            return redirect()->back()->with('error', 'Cette conversation est déjà prise en charge.');
+        // Check if conversation is already completed or closed
+        if (in_array($conversation->status, ['completed', 'timeout', 'abandoned'])) {
+            return redirect()->back()->with('error', 'Cette conversation est terminée et ne peut pas être prise en charge.');
         }
 
-        // Update conversation to transferred status
+        // If already taken by current user, just redirect to chat
+        if ($conversation->agent_id === auth()->id()) {
+            return redirect()->route('dashboard.chat.show', $conversation->id)
+                ->with('info', 'Vous avez déjà pris en charge cette conversation.');
+        }
+
+        // Update conversation to transferred status with agent assigned
         $conversation->update([
             'status' => 'transferred',
             'agent_id' => auth()->id(),
+            'transferred_at' => $conversation->transferred_at ?? now(),
         ]);
 
         // Log the takeover event

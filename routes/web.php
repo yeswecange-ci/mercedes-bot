@@ -43,6 +43,9 @@ Route::middleware('auth')->group(function () {
     // Active Conversations
     Route::get('/dashboard/active', [DashboardWebController::class, 'active'])->name('dashboard.active');
 
+    // Pending Agent Conversations (waiting for takeover)
+    Route::get('/dashboard/pending', [DashboardWebController::class, 'pending'])->name('dashboard.pending');
+
     // All Conversations
     Route::get('/dashboard/conversations', [DashboardWebController::class, 'conversations'])->name('dashboard.conversations');
 
