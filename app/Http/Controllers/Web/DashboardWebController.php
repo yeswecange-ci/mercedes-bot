@@ -78,16 +78,11 @@ class DashboardWebController extends Controller
      */
     public function pending()
     {
-        // Get conversations that are transferred but no agent assigned yet
-        // OR conversations where user explicitly requested agent (check events)
-        $pendingConversations = Conversation::where(function($query) {
-                $query->where('status', 'transferred')
-                      ->whereNull('agent_id');
-            })
-            ->orWhereHas('events', function($query) {
-                $query->where('event_type', 'agent_transfer')
-                      ->where('created_at', '>=', now()->subHours(24));
-            })
+        // Get ONLY conversations that are:
+        // 1. Status = 'transferred' (demande de transfert vers agent)
+        // 2. agent_id = NULL (pas encore pris en charge par un agent)
+        $pendingConversations = Conversation::where('status', 'transferred')
+            ->whereNull('agent_id')
             ->with(['events' => function($query) {
                 $query->orderBy('created_at', 'desc')->limit(5);
             }])

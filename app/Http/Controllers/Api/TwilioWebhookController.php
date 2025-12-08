@@ -119,6 +119,7 @@ class TwilioWebhookController extends Controller
 
             // Check if conversation is transferred to an agent
             $isAgentMode = $conversation->status === 'transferred' && $conversation->agent_id !== null;
+            $isPendingAgent = $conversation->status === 'transferred' && $conversation->agent_id === null;
 
             // Return conversation data to Twilio Flow
             return response()->json([
@@ -133,6 +134,7 @@ class TwilioWebhookController extends Controller
                 'message' => $body,
                 'status' => $conversation->status,
                 'agent_mode' => $isAgentMode,
+                'pending_agent' => $isPendingAgent,  // Nouveau: conversation en attente d'agent
                 'has_media' => $numMedia > 0,
                 'media_count' => $numMedia,
                 'client_exists' => $clientExists,
