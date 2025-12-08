@@ -161,9 +161,9 @@
 
                     <!-- Timestamp -->
                     <div class="ml-4 flex-shrink-0 text-right">
-                        <time class="text-xs text-gray-500" datetime="{{ $input->created_at }}">
-                            {{ $input->created_at->format('d/m/Y') }}<br>
-                            {{ $input->created_at->format('H:i:s') }}
+                        <time class="text-xs text-gray-500" datetime="{{ $input->event_at }}">
+                            {{ $input->event_at->format('d/m/Y') }}<br>
+                            {{ $input->event_at->format('H:i:s') }}
                         </time>
                     </div>
                 </div>

@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
+use App\Models\Conversation;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,5 +30,12 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }
+
+        // Share active conversations count with all views
+        View::composer('*', function ($view) {
+            if (auth()->check()) {
+                $view->with('activeCount', Conversation::active()->count());
+            }
+        });
     }
 }

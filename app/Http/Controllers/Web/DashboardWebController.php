@@ -187,14 +187,14 @@ class DashboardWebController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->whereDate('event_at', '>=', $request->date_from);
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->whereDate('event_at', '<=', $request->date_to);
         }
 
-        $freeInputs = $query->orderBy('created_at', 'desc')
+        $freeInputs = $query->orderBy('event_at', 'desc')
             ->paginate(20)
             ->withQueryString();
 

@@ -177,7 +177,7 @@
                     <dt class="text-sm font-medium text-gray-500 truncate">Durée moyenne</dt>
                     <dd class="mt-1 text-3xl font-semibold text-gray-900">
                         @php
-                            $avgDuration = $dailyStats->avg('avg_session_duration');
+                            $avgDuration = $dailyStats->avg('avg_session_duration_seconds');
                         @endphp
                         {{ $avgDuration ? gmdate('i:s', $avgDuration) : 'N/A' }}
                     </dd>
@@ -273,7 +273,7 @@ new Chart(dailyCtx, {
             },
             {
                 label: 'Transférées',
-                data: {!! json_encode($dailyStats->pluck('status_transferred')) !!},
+                data: {!! json_encode($dailyStats->pluck('transferred_conversations')) !!},
                 borderColor: 'rgb(139, 92, 246)',
                 backgroundColor: 'rgba(139, 92, 246, 0.1)',
                 tension: 0.3,

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Web\DashboardWebController;
 use App\Http\Controllers\Web\ChatController;
+use App\Http\Controllers\Web\ClientController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -60,5 +61,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/take-over', [ChatController::class, 'takeOver'])->name('take-over');
         Route::post('/{id}/send', [ChatController::class, 'send'])->name('send');
         Route::post('/{id}/close', [ChatController::class, 'close'])->name('close');
+    });
+
+    // Clients Routes
+    Route::prefix('dashboard/clients')->name('dashboard.clients.')->group(function () {
+        Route::get('/', [ClientController::class, 'index'])->name('index');
+        Route::get('/sync', [ClientController::class, 'sync'])->name('sync');
+        Route::get('/{id}', [ClientController::class, 'show'])->name('show');
     });
 });
