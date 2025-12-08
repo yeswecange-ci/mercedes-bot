@@ -44,7 +44,8 @@ Route::prefix('auth')->group(function () {
 Route::prefix('twilio')->group(function () {
 
     // Message entrant WhatsApp
-    Route::post('/incoming', [TwilioWebhookController::class, 'handleIncomingMessage']);
+    Route::post('/incoming', [TwilioWebhookController::class, 'handleIncomingMessage'])
+        ->middleware('throttle:60,1'); // 60 requests per minute
 
     // Choix de menu
     Route::post('/menu-choice', [TwilioWebhookController::class, 'handleMenuChoice']);
@@ -95,28 +96,28 @@ Route::prefix('webhook')->group(function () {
 | Elles doivent être protégées par authentification
 */
 Route::prefix('dashboard')->middleware(['auth:sanctum'])->group(function () {
-    
+
     // Statistiques globales
     Route::get('/stats', [DashboardController::class, 'stats']);
-    
+
     // Liste des conversations (avec filtres et pagination)
     Route::get('/conversations', [DashboardController::class, 'conversations']);
-    
+
     // Détail d'une conversation
     Route::get('/conversations/{id}', [DashboardController::class, 'conversationDetail']);
-    
+
     // Conversations actives en temps réel
     Route::get('/active', [DashboardController::class, 'activeConversations']);
-    
+
     // Historique des statistiques quotidiennes
     Route::get('/history', [DashboardController::class, 'history']);
-    
+
     // Parcours les plus fréquents
     Route::get('/paths', [DashboardController::class, 'popularPaths']);
-    
+
     // Recherche dans les saisies libres
     Route::get('/search-inputs', [DashboardController::class, 'searchInputs']);
-    
+
 });
 
 /*

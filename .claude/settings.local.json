@@ -21,7 +21,9 @@
       "Bash(git rm:*)",
       "Bash(chmod:*)",
       "WebFetch(domain:mbbot-dashboard.ywcdigital.com)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(php:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

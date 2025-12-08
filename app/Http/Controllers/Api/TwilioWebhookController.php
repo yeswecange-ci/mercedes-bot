@@ -17,21 +17,34 @@ class TwilioWebhookController extends Controller
     public function handleIncomingMessage(Request $request)
     {
         try {
+            // Validate incoming Twilio data
+            $validated = $request->validate([
+                'From' => 'required|string',
+                'Body' => 'nullable|string|max:1600', // WhatsApp message limit
+                'MessageSid' => 'required|string',
+                'ProfileName' => 'nullable|string|max:255',
+                'NumMedia' => 'nullable|integer|min:0',
+                'MediaUrl0' => 'nullable|url',
+                'MediaContentType0' => 'nullable|string',
+            ]);
+
             // Log incoming request for debugging
-            Log::info('Twilio Incoming Message', $request->all());
+            Log::info('Twilio Incoming Message', $validated);
 
             // Extract Twilio message data
-            $from = $request->input('From'); // Format: whatsapp:+212XXXXXXXXX
-            $body = $request->input('Body');
-            $messageId = $request->input('MessageSid');
-            $profileName = $request->input('ProfileName');
+            $from = $validated['From']; // Format: whatsapp:+212XXXXXXXXX
+            $body = $validated['Body'] ?? '';
+            $messageId = $validated['MessageSid'];
+            $profileName = $validated['ProfileName'] ?? null;
+            $numMedia = $validated['NumMedia'] ?? 0;
 
             // Clean phone number (remove whatsapp: prefix)
             $phoneNumber = str_replace('whatsapp:', '', $from);
 
-            // Check if there's an existing conversation (any status) for this phone number
+            // Check if there's an existing active conversation (with 24h timeout)
             $conversation = Conversation::where('phone_number', $phoneNumber)
                 ->whereIn('status', ['active', 'transferred'])
+                ->where('last_activity_at', '>', now()->subHours(24))
                 ->latest()
                 ->first();
 
@@ -40,15 +53,60 @@ class TwilioWebhookController extends Controller
                 $conversation = Conversation::create([
                     'phone_number' => $phoneNumber,
                     'session_id' => uniqid('session_', true),
-                    'nom_prenom' => $profileName,
+                    'nom_prenom' => $profileName ?? 'Client WhatsApp',
                     'started_at' => now(),
                     'last_activity_at' => now(),
                     'current_menu' => 'main_menu',
                     'status' => 'active',
                 ]);
             } else {
-                // Update last activity
-                $conversation->update(['last_activity_at' => now()]);
+                // Update last activity and profile name if changed
+                $updates = ['last_activity_at' => now()];
+
+                if ($profileName && $conversation->nom_prenom !== $profileName) {
+                    $updates['nom_prenom'] = $profileName;
+                }
+
+                $conversation->update($updates);
+            }
+
+            // Synchronize with Client table
+            $client = \App\Models\Client::findOrCreateByPhone($phoneNumber);
+
+            // Check if client already exists (has interaction history)
+            $clientExists = $client->wasRecentlyCreated === false && $client->nom_prenom !== null;
+
+            // Update client information
+            if ($profileName && !$client->nom_prenom) {
+                $client->update(['nom_prenom' => $profileName]);
+            }
+
+            $client->incrementInteractions();
+
+            // Prepare metadata for the event
+            $metadata = [
+                'message_sid' => $messageId,
+                'profile_name' => $profileName,
+            ];
+
+            // Handle media attachments (images, videos, audio)
+            if ($numMedia > 0) {
+                $mediaItems = [];
+
+                for ($i = 0; $i < min($numMedia, 10); $i++) {
+                    $mediaUrl = $request->input("MediaUrl{$i}");
+                    $mediaType = $request->input("MediaContentType{$i}");
+
+                    if ($mediaUrl) {
+                        $mediaItems[] = [
+                            'url' => $mediaUrl,
+                            'type' => $mediaType,
+                        ];
+                    }
+                }
+
+                $metadata['media'] = $mediaItems;
+                $metadata['media_count'] = $numMedia;
             }
 
             // Store the incoming message as an event
@@ -56,10 +114,7 @@ class TwilioWebhookController extends Controller
                 'conversation_id' => $conversation->id,
                 'event_type' => 'message_received',
                 'user_input' => $body,
-                'metadata' => [
-                    'message_sid' => $messageId,
-                    'profile_name' => $profileName,
-                ],
+                'metadata' => $metadata,
             ]);
 
             // Check if conversation is transferred to an agent
@@ -72,12 +127,30 @@ class TwilioWebhookController extends Controller
                 'session_id' => $conversation->session_id,
                 'phone_number' => $phoneNumber,
                 'current_menu' => $conversation->current_menu,
-                'is_client' => $conversation->is_client,
-                'profile_name' => $profileName,
+                'is_client' => $client->is_client ?? $conversation->is_client,
+                'nom_prenom' => $client->nom_prenom ?? $conversation->nom_prenom,
+                'profile_name' => $profileName ?? $conversation->nom_prenom,
                 'message' => $body,
                 'status' => $conversation->status,
                 'agent_mode' => $isAgentMode,
+                'has_media' => $numMedia > 0,
+                'media_count' => $numMedia,
+                'client_exists' => $clientExists,
+                'client_has_name' => $client->nom_prenom !== null,
+                'client_status_known' => $client->is_client !== null,
             ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Twilio Webhook Validation Error', [
+                'errors' => $e->errors(),
+                'request' => $request->all(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Invalid request data',
+                'details' => $e->errors(),
+            ], 422);
 
         } catch (\Exception $e) {
             Log::error('Twilio Webhook Error', [
@@ -117,7 +190,9 @@ class TwilioWebhookController extends Controller
             ]);
 
             // Add menu to path
-            $menuPath = $conversation->menu_path ? json_decode($conversation->menu_path, true) : [];
+            $menuPath = ($conversation->menu_path && is_string($conversation->menu_path))
+                ? json_decode($conversation->menu_path, true)
+                : [];
             $menuPath[] = $menuChoice;
             $conversation->update(['menu_path' => json_encode($menuPath)]);
 

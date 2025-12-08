@@ -1,0 +1,519 @@
+{
+    "description": "Mercedes-Benz by CFAO - WhatsApp Bot v3.2 - Optimisé avec vérification client existant",
+    "states": [
+        {
+            "name": "Trigger",
+            "type": "trigger",
+            "transitions": [
+                {
+                    "next": "api_incoming",
+                    "event": "incomingMessage"
+                },
+                {
+                    "event": "incomingCall"
+                },
+                {
+                    "next": "api_incoming",
+                    "event": "incomingConversationMessage"
+                },
+                {
+                    "event": "incomingRequest"
+                },
+                {
+                    "next": "api_incoming",
+                    "event": "incomingParent"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 0,
+                    "y": 0
+                }
+            }
+        },
+        {
+            "name": "api_incoming",
+            "type": "make-http-request",
+            "transitions": [
+                {
+                    "next": "check_agent_mode",
+                    "event": "success"
+                },
+                {
+                    "next": "send_error_message",
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 60,
+                    "y": 200
+                },
+                "method": "POST",
+                "content_type": "application/json;charset=utf-8",
+                "add_twilio_auth": false,
+                "body": "{\"From\":\"{{trigger.message.From}}\",\"Body\":\"{{trigger.message.Body}}\",\"MessageSid\":\"{{trigger.message.MessageSid}}\",\"ProfileName\":\"{{trigger.message.ProfileName}}\",\"NumMedia\":\"{{trigger.message.NumMedia}}\",\"MediaUrl0\":\"{{trigger.message.MediaUrl0}}\",\"MediaContentType0\":\"{{trigger.message.MediaContentType0}}\"}",
+                "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/incoming"
+            }
+        },
+        {
+            "name": "check_agent_mode",
+            "type": "split-based-on",
+            "transitions": [
+                {
+                    "next": "send_message_welcome",
+                    "event": "noMatch"
+                },
+                {
+                    "next": "end_flow_agent",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Agent Mode",
+                            "arguments": [
+                                "{{widgets.api_incoming.parsed.agent_mode}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "true"
+                        }
+                    ]
+                }
+            ],
+            "properties": {
+                "input": "{{widgets.api_incoming.parsed.agent_mode}}",
+                "offset": {
+                    "x": 170,
+                    "y": 410
+                }
+            }
+        },
+        {
+            "name": "end_flow_agent",
+            "type": "send-message",
+            "transitions": [
+                {
+                    "event": "sent"
+                },
+                {
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": -400,
+                    "y": 600
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "to": "{{contact.channel.address}}",
+                "body": "Votre conversation est en cours avec un agent. Merci de patienter."
+            }
+        },
+        {
+            "name": "send_message_welcome",
+            "type": "send-message",
+            "transitions": [
+                {
+                    "next": "delay_welcome",
+                    "event": "sent"
+                },
+                {
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 220,
+                    "y": 710
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "to": "{{contact.channel.address}}",
+                "body": "Bonjour et bienvenue sur la chaîne WhatsApp MERCEDES-BENZ by CFAO 👋\nJe suis votre assistant virtuel."
+            }
+        },
+        {
+            "name": "delay_welcome",
+            "type": "run-function",
+            "transitions": [
+                {
+                    "next": "check_client_exists",
+                    "event": "success"
+                },
+                {
+                    "next": "check_client_exists",
+                    "event": "fail"
+                }
+            ],
+            "properties": {
+                "service_sid": "ZSb7de9fd35671e380ad53677e2cf57770",
+                "environment_sid": "ZEc4ec4248edabbbb0cddf19a5c41ef926",
+                "offset": {
+                    "x": -230,
+                    "y": 830
+                },
+                "function_sid": "ZHe612874f4ed88f0f570e65c3a78d3411",
+                "url": "https://merco-9614.twil.io/add_delay"
+            }
+        },
+        {
+            "name": "check_client_exists",
+            "type": "split-based-on",
+            "transitions": [
+                {
+                    "next": "ask_name",
+                    "event": "noMatch"
+                },
+                {
+                    "next": "check_client_status_known",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Client Has Name",
+                            "arguments": [
+                                "{{widgets.api_incoming.parsed.client_has_name}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "true"
+                        }
+                    ]
+                }
+            ],
+            "properties": {
+                "input": "{{widgets.api_incoming.parsed.client_has_name}}",
+                "offset": {
+                    "x": 200,
+                    "y": 1030
+                }
+            }
+        },
+        {
+            "name": "check_client_status_known",
+            "type": "split-based-on",
+            "transitions": [
+                {
+                    "next": "ask_is_client_returning",
+                    "event": "noMatch"
+                },
+                {
+                    "next": "menu_principal",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Client Status Known",
+                            "arguments": [
+                                "{{widgets.api_incoming.parsed.client_status_known}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "true"
+                        }
+                    ]
+                }
+            ],
+            "properties": {
+                "input": "{{widgets.api_incoming.parsed.client_status_known}}",
+                "offset": {
+                    "x": 300,
+                    "y": 1200
+                }
+            }
+        },
+        {
+            "name": "ask_is_client_returning",
+            "type": "send-and-wait-for-reply",
+            "transitions": [
+                {
+                    "next": "split_is_client_returning",
+                    "event": "incomingMessage"
+                },
+                {
+                    "next": "handle_timeout",
+                    "event": "timeout"
+                },
+                {
+                    "event": "deliveryFailure"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 300,
+                    "y": 1400
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "body": "Êtes-vous déjà client(e) Mercedes-Benz ?\n1️⃣ Oui\n2️⃣ Non",
+                "timeout": "3600"
+            }
+        },
+        {
+            "name": "split_is_client_returning",
+            "type": "split-based-on",
+            "transitions": [
+                {
+                    "next": "invalid_is_client_returning",
+                    "event": "noMatch"
+                },
+                {
+                    "next": "api_free_input_client_returning",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Oui",
+                            "arguments": [
+                                "{{widgets.ask_is_client_returning.inbound.Body}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "1"
+                        }
+                    ]
+                },
+                {
+                    "next": "api_free_input_client_returning",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Non",
+                            "arguments": [
+                                "{{widgets.ask_is_client_returning.inbound.Body}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "2"
+                        }
+                    ]
+                }
+            ],
+            "properties": {
+                "input": "{{widgets.ask_is_client_returning.inbound.Body}}",
+                "offset": {
+                    "x": 300,
+                    "y": 1600
+                }
+            }
+        },
+        {
+            "name": "invalid_is_client_returning",
+            "type": "send-message",
+            "transitions": [
+                {
+                    "next": "ask_is_client_returning",
+                    "event": "sent"
+                },
+                {
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 550,
+                    "y": 1600
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "to": "{{contact.channel.address}}",
+                "body": "Je n'ai pas compris. Veuillez saisir 1 pour Oui ou 2 pour Non."
+            }
+        },
+        {
+            "name": "api_free_input_client_returning",
+            "type": "make-http-request",
+            "transitions": [
+                {
+                    "next": "menu_principal",
+                    "event": "success"
+                },
+                {
+                    "next": "menu_principal",
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 300,
+                    "y": 1800
+                },
+                "method": "POST",
+                "content_type": "application/json;charset=utf-8",
+                "add_twilio_auth": false,
+                "body": "{\"conversation_id\":{{widgets.api_incoming.parsed.conversation_id}},\"user_input\":\"{{widgets.ask_is_client_returning.inbound.Body}}\",\"widget_name\":\"check_client\"}",
+                "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input"
+            }
+        },
+        {
+            "name": "ask_name",
+            "type": "send-and-wait-for-reply",
+            "transitions": [
+                {
+                    "next": "api_free_input_name",
+                    "event": "incomingMessage"
+                },
+                {
+                    "next": "handle_timeout",
+                    "event": "timeout"
+                },
+                {
+                    "event": "deliveryFailure"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": -300,
+                    "y": 1200
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "body": "Quels sont vos nom et prénom ?",
+                "timeout": "3600"
+            }
+        },
+        {
+            "name": "api_free_input_name",
+            "type": "make-http-request",
+            "transitions": [
+                {
+                    "next": "ask_is_client",
+                    "event": "success"
+                },
+                {
+                    "next": "ask_is_client",
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": -300,
+                    "y": 1400
+                },
+                "method": "POST",
+                "content_type": "application/json;charset=utf-8",
+                "add_twilio_auth": false,
+                "body": "{\"conversation_id\":{{widgets.api_incoming.parsed.conversation_id}},\"user_input\":\"{{widgets.ask_name.inbound.Body}}\",\"widget_name\":\"collect_name\"}",
+                "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input"
+            }
+        },
+        {
+            "name": "ask_is_client",
+            "type": "send-and-wait-for-reply",
+            "transitions": [
+                {
+                    "next": "split_is_client",
+                    "event": "incomingMessage"
+                },
+                {
+                    "next": "handle_timeout",
+                    "event": "timeout"
+                },
+                {
+                    "event": "deliveryFailure"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": -300,
+                    "y": 1600
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "body": "Merci ! 😊\n\nÊtes-vous déjà client(e) Mercedes-Benz ?\n1️⃣ Oui\n2️⃣ Non",
+                "timeout": "3600"
+            }
+        },
+        {
+            "name": "split_is_client",
+            "type": "split-based-on",
+            "transitions": [
+                {
+                    "next": "invalid_is_client",
+                    "event": "noMatch"
+                },
+                {
+                    "next": "api_free_input_client",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Oui",
+                            "arguments": [
+                                "{{widgets.ask_is_client.inbound.Body}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "1"
+                        }
+                    ]
+                },
+                {
+                    "next": "api_free_input_client",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "Non",
+                            "arguments": [
+                                "{{widgets.ask_is_client.inbound.Body}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "2"
+                        }
+                    ]
+                }
+            ],
+            "properties": {
+                "input": "{{widgets.ask_is_client.inbound.Body}}",
+                "offset": {
+                    "x": -300,
+                    "y": 1800
+                }
+            }
+        },
+        {
+            "name": "invalid_is_client",
+            "type": "send-message",
+            "transitions": [
+                {
+                    "next": "ask_is_client",
+                    "event": "sent"
+                },
+                {
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": -550,
+                    "y": 1800
+                },
+                "service": "{{trigger.message.InstanceSid}}",
+                "channel": "{{trigger.message.ChannelSid}}",
+                "from": "{{flow.channel.address}}",
+                "to": "{{contact.channel.address}}",
+                "body": "Je n'ai pas compris. Veuillez saisir 1 pour Oui ou 2 pour Non."
+            }
+        },
+        {
+            "name": "api_free_input_client",
+            "type": "make-http-request",
+            "transitions": [
+                {
+                    "next": "menu_principal",
+                    "event": "success"
+                },
+                {
+                    "next": "menu_principal",
+                    "event": "failed"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": -300,
+                    "y": 2000
+                },
+                "method": "POST",
+                "content_type": "application/json;charset=utf-8",
+                "add_twilio_auth": false,
+                "body": "{\"conversation_id\":{{widgets.api_incoming.parsed.conversation_id}},\"user_input\":\"{{widgets.ask_is_client.inbound.Body}}\",\"widget_name\":\"check_client\"}",
+                "url": "https://mbbot-dashboard.ywcdigital.com/api/twilio/free-input"
+            }
+        }
