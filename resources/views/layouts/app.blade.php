@@ -51,13 +51,10 @@
     <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col"
          :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
         <!-- Logo -->
-        <div class="flex items-center justify-between h-20 px-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white flex-shrink-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white flex-shrink-0">
             <div class="flex items-center space-x-3">
-                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md">
-                    <img src="{{ asset('images/logomercedes.png') }}" alt="Mercedes-Benz" class="h-7 w-7 object-contain">
-                </div>
                 <div>
-                    <span class="text-base font-bold text-slate-800">Mercedes-Benz</span>
+                    <span class="text-lg font-bold text-slate-800">Mercedes-Benz</span>
                     <p class="text-xs text-slate-500 font-medium">Bot Dashboard</p>
                 </div>
             </div>
