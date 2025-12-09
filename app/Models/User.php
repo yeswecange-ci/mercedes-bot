@@ -47,11 +47,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
      * Check if user is admin
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['super_admin', 'admin']);
     }
 
     /**
@@ -59,6 +67,49 @@ class User extends Authenticatable
      */
     public function isSupervisor(): bool
     {
-        return in_array($this->role, ['admin', 'supervisor']);
+        return in_array($this->role, ['super_admin', 'admin', 'supervisor']);
+    }
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole(string|array $roles): bool
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles);
+        }
+        return $this->role === $roles;
+    }
+
+    /**
+     * Get user's activity logs
+     */
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    /**
+     * Check if user can edit clients
+     */
+    public function canEditClients(): bool
+    {
+        return in_array($this->role, ['super_admin', 'admin']);
+    }
+
+    /**
+     * Check if user can manage users
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * Check if user can view activity logs
+     */
+    public function canViewActivityLogs(): bool
+    {
+        return $this->role === 'super_admin';
     }
 }

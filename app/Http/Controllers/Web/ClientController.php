@@ -93,6 +93,48 @@ class ClientController extends Controller
     }
 
     /**
+     * Show the form for editing a client
+     */
+    public function edit($id)
+    {
+        $client = Client::findOrFail($id);
+        return view('dashboard.clients.edit', compact('client'));
+    }
+
+    /**
+     * Update the specified client
+     */
+    public function update(Request $request, $id)
+    {
+        $client = Client::findOrFail($id);
+
+        $validated = $request->validate([
+            'nom_prenom' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone_number' => 'required|string|max:50',
+            'is_client' => 'nullable|boolean',
+            'vin' => 'nullable|string|max:50',
+            'carte_vip' => 'nullable|string|max:50',
+        ]);
+
+        $oldData = $client->toArray();
+        $client->update($validated);
+
+        \App\Models\ActivityLog::log(
+            'client_updated',
+            "Client {$client->nom_prenom} ({$client->phone_number}) a été mis à jour",
+            $client,
+            [
+                'old' => $oldData,
+                'new' => $client->fresh()->toArray(),
+            ]
+        );
+
+        return redirect()->route('dashboard.clients.show', $client->id)
+            ->with('success', 'Les informations du client ont été mises à jour avec succès.');
+    }
+
+    /**
      * Sync all clients from conversations
      */
     public function sync()

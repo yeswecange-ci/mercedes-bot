@@ -46,17 +46,23 @@
             </a>
 
             <a href="{{ route('dashboard.pending') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard.pending')) bg-orange-50 text-orange-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 mr-3 @if(request()->routeIs('dashboard.pending')) animate-pulse @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 @if(request()->routeIs('dashboard.pending')) bg-gradient-to-r from-orange-50 to-yellow-50 text-orange-700 shadow-sm @else text-gray-700 hover:bg-gray-100 hover:translate-x-1 @endif"
+               x-data="{ pendingCount: {{ \App\Models\Conversation::where('status', 'transferred')->whereNull('agent_id')->count() }} }"
+               x-init="setInterval(() => {
+                   fetch('/api/dashboard/pending-count', {
+                       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') }
+                   }).then(r => r.json()).then(data => pendingCount = data.count).catch(() => {});
+               }, 5000)">
+                <svg class="w-5 h-5 mr-3" :class="{ 'animate-pulse text-orange-500': pendingCount > 0 }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
-                En attente agent
-                @php
-                    $pendingCount = \App\Models\Conversation::where('status', 'transferred')->whereNull('agent_id')->count();
-                @endphp
-                @if($pendingCount > 0)
-                <span class="ml-auto bg-orange-500 text-white px-2 py-1 text-xs font-semibold rounded-full animate-pulse">{{ $pendingCount }}</span>
-                @endif
+                <span class="flex-1">En attente agent</span>
+                <span x-show="pendingCount > 0"
+                      x-transition:enter="transition ease-out duration-300"
+                      x-transition:enter-start="opacity-0 scale-90"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-2.5 py-0.5 text-xs font-bold rounded-full shadow-lg animate-pulse"
+                      x-text="pendingCount"></span>
             </a>
 
             <a href="{{ route('dashboard.active') }}"
@@ -98,6 +104,19 @@
                 </svg>
                 Clients
             </a>
+
+            @if(auth()->user()->canManageUsers())
+            <div class="pt-4 mt-4 border-t border-gray-200">
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administration</p>
+                <a href="{{ route('dashboard.users.index') }}"
+                   class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150 @if(request()->routeIs('dashboard.users.*')) bg-purple-50 text-purple-700 @else text-gray-700 hover:bg-gray-100 @endif">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    Gestion des utilisateurs
+                </a>
+            </div>
+            @endif
         </nav>
 
         <!-- User Profile -->

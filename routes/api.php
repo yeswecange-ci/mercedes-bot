@@ -118,6 +118,10 @@ Route::prefix('dashboard')->middleware(['auth:sanctum'])->group(function () {
     // Recherche dans les saisies libres
     Route::get('/search-inputs', [DashboardController::class, 'searchInputs']);
 
+    // Compteurs dynamiques temps réel
+    Route::get('/pending-count', [DashboardController::class, 'getPendingCount']);
+    Route::get('/active-count', [DashboardController::class, 'getActiveCount']);
+
 });
 
 /*

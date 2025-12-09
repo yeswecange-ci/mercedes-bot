@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Web\DashboardWebController;
 use App\Http\Controllers\Web\ChatController;
 use App\Http\Controllers\Web\ClientController;
+use App\Http\Controllers\Web\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -71,5 +72,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [ClientController::class, 'index'])->name('index');
         Route::get('/sync', [ClientController::class, 'sync'])->name('sync');
         Route::get('/{id}', [ClientController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [ClientController::class, 'edit'])->name('edit')->middleware('role:super_admin,admin');
+        Route::put('/{id}', [ClientController::class, 'update'])->name('update')->middleware('role:super_admin,admin');
+    });
+
+    // User Management Routes (Super Admin only)
+    Route::prefix('dashboard/users')->name('dashboard.users.')->middleware('role:super_admin')->group(function () {
+        Route::get('/', [UserManagementController::class, 'index'])->name('index');
+        Route::get('/create', [UserManagementController::class, 'create'])->name('create');
+        Route::post('/', [UserManagementController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [UserManagementController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [UserManagementController::class, 'update'])->name('update');
+        Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
+        Route::get('/activity-logs', [UserManagementController::class, 'activityLogs'])->name('activity-logs');
     });
 });

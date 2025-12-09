@@ -301,6 +301,34 @@ class DashboardController extends Controller
     }
 
     /**
+     * Compteur conversations en attente (temps réel)
+     *
+     * GET /api/dashboard/pending-count
+     */
+    public function getPendingCount(): JsonResponse
+    {
+        $count = Conversation::where('status', 'transferred')
+            ->whereNull('agent_id')
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Compteur conversations actives (temps réel)
+     *
+     * GET /api/dashboard/active-count
+     */
+    public function getActiveCount(): JsonResponse
+    {
+        $count = Conversation::where('status', 'active')
+            ->where('last_activity_at', '>=', now()->subMinutes(30))
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
+    /**
      * Stats par menu
      */
     private function getMenuStats($startDate, $endDate): array
