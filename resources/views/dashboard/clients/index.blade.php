@@ -172,20 +172,8 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden shadow ring-2 ring-white">
-                                @php
-                                    $avatarUrl = $client->is_client
-                                        ? asset('images/avatars/client.gif')
-                                        : asset('images/avatars/non-client.gif');
-
-                                    $fallbackUrl = $client->is_client
-                                        ? 'https://ui-avatars.com/api/?name=Client&background=3B82F6&color=fff&size=150&rounded=true'
-                                        : 'https://ui-avatars.com/api/?name=Guest&background=6B7280&color=fff&size=150&rounded=true';
-                                @endphp
-                                <img src="{{ $avatarUrl }}"
-                                     alt="{{ $client->nom_prenom ?? 'Avatar' }}"
-                                     onerror="this.src='{{ $fallbackUrl }}'"
-                                     class="w-10 h-10 object-cover">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold @if($client->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
+                                {{ strtoupper(substr($client->nom_prenom ?? $client->phone_number, 0, 1)) }}
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">

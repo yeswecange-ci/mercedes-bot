@@ -19,10 +19,11 @@ class DashboardWebController extends Controller
         $dateFrom = $request->input('date_from', now()->subDays(30)->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
 
-        // Get overall statistics
+        // Get overall statistics - ALL filtered by date range for consistency
         $stats = [
             'total_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])->count(),
-            'active_conversations' => Conversation::active()->count(),
+            'active_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+                ->where('status', 'active')->count(),
             'completed_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'completed')->count(),
             'transferred_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
