@@ -104,23 +104,29 @@ class DashboardWebController extends Controller
     {
         $query = Conversation::with('events');
 
-        // Filters
+        // Date range filter - CONSISTENT with dashboard and statistics
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+
+        if ($dateFrom && $dateTo) {
+            $query->whereBetween('started_at', [$dateFrom, $dateTo]);
+        } elseif ($dateFrom) {
+            $query->where('started_at', '>=', $dateFrom);
+        } elseif ($dateTo) {
+            $query->where('started_at', '<=', $dateTo);
+        }
+
+        // Status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
+        // Client type filter
         if ($request->filled('is_client')) {
             $query->where('is_client', $request->is_client);
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('started_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('started_at', '<=', $request->date_to);
-        }
-
+        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -134,7 +140,36 @@ class DashboardWebController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('dashboard.conversations', compact('conversations'));
+        // Calculate total counts for the current filter - CONSISTENT with dashboard
+        $totalStats = [
+            'total' => $conversations->total(),
+            'active' => Conversation::when($dateFrom && $dateTo, function($q) use ($dateFrom, $dateTo) {
+                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                })
+                ->where('status', 'active')
+                ->when($request->filled('is_client'), function($q) use ($request) {
+                    $q->where('is_client', $request->is_client);
+                })
+                ->count(),
+            'completed' => Conversation::when($dateFrom && $dateTo, function($q) use ($dateFrom, $dateTo) {
+                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                })
+                ->where('status', 'completed')
+                ->when($request->filled('is_client'), function($q) use ($request) {
+                    $q->where('is_client', $request->is_client);
+                })
+                ->count(),
+            'transferred' => Conversation::when($dateFrom && $dateTo, function($q) use ($dateFrom, $dateTo) {
+                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                })
+                ->where('status', 'transferred')
+                ->when($request->filled('is_client'), function($q) use ($request) {
+                    $q->where('is_client', $request->is_client);
+                })
+                ->count(),
+        ];
+
+        return view('dashboard.conversations', compact('conversations', 'totalStats', 'dateFrom', 'dateTo'));
     }
 
     /**
@@ -156,6 +191,17 @@ class DashboardWebController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->subDays(30)->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
+
+        // Get overall statistics - CONSISTENT with dashboard
+        $stats = [
+            'total_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])->count(),
+            'active_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+                ->where('status', 'active')->count(),
+            'completed_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+                ->where('status', 'completed')->count(),
+            'transferred_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+                ->where('status', 'transferred')->count(),
+        ];
 
         // Get daily statistics for charts
         $dailyStats = DailyStatistic::whereBetween('date', [$dateFrom, $dateTo])
@@ -194,7 +240,7 @@ class DashboardWebController extends Controller
             ->orderBy('hour', 'asc')
             ->get();
 
-        return view('dashboard.statistics', compact('dailyStats', 'menuStats', 'statusStats', 'popularPaths', 'peakHours', 'dateFrom', 'dateTo'));
+        return view('dashboard.statistics', compact('stats', 'dailyStats', 'menuStats', 'statusStats', 'popularPaths', 'peakHours', 'dateFrom', 'dateTo'));
     }
 
     /**

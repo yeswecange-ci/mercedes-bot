@@ -5,10 +5,23 @@
 
 @section('content')
 <!-- Stats Summary -->
-<div class="mb-6 flex items-center justify-between">
-    <p class="text-sm text-gray-600">
-        <span class="font-semibold text-gray-900">{{ $conversations->total() }}</span> conversations au total
-    </p>
+<div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="card">
+        <p class="text-xs font-medium text-gray-600 mb-1">Total</p>
+        <p class="text-2xl font-bold text-gray-900">{{ $totalStats['total'] ?? $conversations->total() }}</p>
+    </div>
+    <div class="card">
+        <p class="text-xs font-medium text-gray-600 mb-1">Actives</p>
+        <p class="text-2xl font-bold text-green-600">{{ $totalStats['active'] ?? 0 }}</p>
+    </div>
+    <div class="card">
+        <p class="text-xs font-medium text-gray-600 mb-1">Terminées</p>
+        <p class="text-2xl font-bold text-blue-600">{{ $totalStats['completed'] ?? 0 }}</p>
+    </div>
+    <div class="card">
+        <p class="text-xs font-medium text-gray-600 mb-1">Transférées</p>
+        <p class="text-2xl font-bold text-purple-600">{{ $totalStats['transferred'] ?? 0 }}</p>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -110,7 +123,7 @@
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3 @if($conversation->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
                                 {{ strtoupper(substr($conversation->nom_prenom ?? 'N', 0, 1)) }}
                             </div>
                             <div>
