@@ -80,14 +80,14 @@
         </div>
 
         <!-- Register Link -->
-        <div class="text-center mt-6">
+        {{-- <div class="text-center mt-6">
             <p class="text-sm text-slate-600">
                 Pas encore de compte ?
                 <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
                     Inscrivez-vous
                 </a>
             </p>
-        </div>
+        </div> --}}
     </div>
 </div>
 @endsection
