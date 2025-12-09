@@ -50,7 +50,7 @@ class ClientController extends Controller
         $sortOrder = $request->input('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $clients = $query->paginate(20)->withQueryString();
+        $clients = $query->paginate(10)->withQueryString();
 
         // Get statistics
         $stats = [
@@ -164,16 +164,14 @@ class ClientController extends Controller
 
             $client->increment('conversation_count');
 
-            // Update first and last interaction dates
+            // Update first interaction date
             if (!$client->first_interaction_at || $conversation->started_at < $client->first_interaction_at) {
                 $client->first_interaction_at = $conversation->started_at;
+                $client->save();
             }
 
-            if (!$client->last_interaction_at || $conversation->last_activity_at > $client->last_interaction_at) {
-                $client->last_interaction_at = $conversation->last_activity_at ?? $conversation->started_at;
-            }
-
-            $client->save();
+            // Update last_interaction_at from actual conversation data
+            $client->updateLastInteractionAt();
 
             if ($client->wasRecentlyCreated) {
                 $synced++;

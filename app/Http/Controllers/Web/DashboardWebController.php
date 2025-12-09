@@ -22,16 +22,15 @@ class DashboardWebController extends Controller
         // Get overall statistics - ALL filtered by date range for consistency
         $stats = [
             'total_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])->count(),
-            'active_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
-                ->where('status', 'active')->count(),
+            'active_conversations' => Conversation::where('status', 'active')->count(),
             'completed_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'completed')->count(),
             'transferred_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'transferred')->count(),
-            'total_clients' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
-                ->where('is_client', true)->distinct('phone_number')->count(),
-            'total_non_clients' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
-                ->where('is_client', false)->distinct('phone_number')->count(),
+            'total_clients' => \App\Models\Client::whereBetween('last_interaction_at', [$dateFrom, $dateTo])
+                ->where('is_client', true)->count(),
+            'total_non_clients' => \App\Models\Client::whereBetween('last_interaction_at', [$dateFrom, $dateTo])
+                ->where('is_client', false)->count(),
             'avg_duration' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->whereNotNull('ended_at')
                 ->avg('duration_seconds'),
@@ -137,36 +136,39 @@ class DashboardWebController extends Controller
         }
 
         $conversations = $query->orderBy('started_at', 'desc')
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
 
-        // Calculate total counts for the current filter - CONSISTENT with dashboard
+        // Build base query for stats with same filters as main query
+        $baseStatsQuery = Conversation::query();
+
+        if ($dateFrom && $dateTo) {
+            $baseStatsQuery->whereBetween('started_at', [$dateFrom, $dateTo]);
+        } elseif ($dateFrom) {
+            $baseStatsQuery->where('started_at', '>=', $dateFrom);
+        } elseif ($dateTo) {
+            $baseStatsQuery->where('started_at', '<=', $dateTo);
+        }
+
+        if ($request->filled('is_client')) {
+            $baseStatsQuery->where('is_client', $request->is_client);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $baseStatsQuery->where(function($q) use ($search) {
+                $q->where('phone_number', 'like', "%{$search}%")
+                  ->orWhere('nom_prenom', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Calculate total counts for the current filter
         $totalStats = [
             'total' => $conversations->total(),
-            'active' => Conversation::when($dateFrom && $dateTo, function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
-                })
-                ->where('status', 'active')
-                ->when($request->filled('is_client'), function($q) use ($request) {
-                    $q->where('is_client', $request->is_client);
-                })
-                ->count(),
-            'completed' => Conversation::when($dateFrom && $dateTo, function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
-                })
-                ->where('status', 'completed')
-                ->when($request->filled('is_client'), function($q) use ($request) {
-                    $q->where('is_client', $request->is_client);
-                })
-                ->count(),
-            'transferred' => Conversation::when($dateFrom && $dateTo, function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
-                })
-                ->where('status', 'transferred')
-                ->when($request->filled('is_client'), function($q) use ($request) {
-                    $q->where('is_client', $request->is_client);
-                })
-                ->count(),
+            'active' => (clone $baseStatsQuery)->where('status', 'active')->count(),
+            'completed' => (clone $baseStatsQuery)->where('status', 'completed')->count(),
+            'transferred' => (clone $baseStatsQuery)->where('status', 'transferred')->count(),
         ];
 
         return view('dashboard.conversations', compact('conversations', 'totalStats', 'dateFrom', 'dateTo'));
@@ -195,12 +197,18 @@ class DashboardWebController extends Controller
         // Get overall statistics - CONSISTENT with dashboard
         $stats = [
             'total_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])->count(),
-            'active_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
-                ->where('status', 'active')->count(),
+            'active_conversations' => Conversation::where('status', 'active')->count(),
             'completed_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'completed')->count(),
             'transferred_conversations' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
                 ->where('status', 'transferred')->count(),
+            'total_clients' => \App\Models\Client::whereBetween('last_interaction_at', [$dateFrom, $dateTo])
+                ->where('is_client', true)->count(),
+            'total_non_clients' => \App\Models\Client::whereBetween('last_interaction_at', [$dateFrom, $dateTo])
+                ->where('is_client', false)->count(),
+            'avg_duration' => Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+                ->whereNotNull('ended_at')
+                ->avg('duration_seconds'),
         ];
 
         // Get daily statistics for charts

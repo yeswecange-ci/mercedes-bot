@@ -57,9 +57,7 @@ class Client extends Model
      */
     public function updateFromConversation(Conversation $conversation): void
     {
-        $updates = [
-            'last_interaction_at' => now(),
-        ];
+        $updates = [];
 
         if ($conversation->nom_prenom && !$this->nom_prenom) {
             $updates['nom_prenom'] = $conversation->nom_prenom;
@@ -81,7 +79,26 @@ class Client extends Model
             $updates['carte_vip'] = $conversation->carte_vip;
         }
 
-        $this->update($updates);
+        if (!empty($updates)) {
+            $this->update($updates);
+        }
+    }
+
+    /**
+     * Recalculate and update last_interaction_at from conversations
+     */
+    public function updateLastInteractionAt(): void
+    {
+        $lastConversation = Conversation::where('phone_number', $this->phone_number)
+            ->orderBy('last_activity_at', 'desc')
+            ->orderBy('started_at', 'desc')
+            ->first();
+
+        if ($lastConversation) {
+            $this->update([
+                'last_interaction_at' => $lastConversation->last_activity_at ?? $lastConversation->started_at
+            ]);
+        }
     }
 
     /**
