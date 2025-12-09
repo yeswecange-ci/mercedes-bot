@@ -18,8 +18,20 @@
 <div class="bg-white shadow rounded-lg p-6 mb-6">
     <div class="flex items-start justify-between">
         <div class="flex items-center">
-            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-2xl font-semibold">
-                {{ strtoupper(substr($client->nom_prenom ?? $client->phone_number, 0, 1)) }}
+            <div class="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden shadow-lg ring-4 ring-white">
+                @php
+                    $avatarUrl = $client->is_client
+                        ? asset('images/avatars/client.gif')
+                        : asset('images/avatars/non-client.gif');
+
+                    $fallbackUrl = $client->is_client
+                        ? 'https://ui-avatars.com/api/?name=Client&background=3B82F6&color=fff&size=250&rounded=true'
+                        : 'https://ui-avatars.com/api/?name=Guest&background=6B7280&color=fff&size=250&rounded=true';
+                @endphp
+                <img src="{{ $avatarUrl }}"
+                     alt="{{ $client->nom_prenom ?? 'Avatar' }}"
+                     onerror="this.src='{{ $fallbackUrl }}'"
+                     class="w-16 h-16 object-cover">
             </div>
             <div class="ml-4">
                 <h2 class="text-2xl font-bold text-gray-900">{{ $client->nom_prenom ?? 'Client Anonyme' }}</h2>

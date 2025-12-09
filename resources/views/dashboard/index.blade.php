@@ -195,8 +195,20 @@
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                                {{ strtoupper(substr($conversation->nom_prenom ?? 'N', 0, 1)) }}
+                            <div class="w-10 h-10 rounded-full overflow-hidden shadow ring-2 ring-white mr-3">
+                                @php
+                                    $avatarUrl = $conversation->is_client
+                                        ? asset('images/avatars/client.gif')
+                                        : asset('images/avatars/non-client.gif');
+
+                                    $fallbackUrl = $conversation->is_client
+                                        ? 'https://ui-avatars.com/api/?name=Client&background=0D47A1&color=fff&size=150&rounded=true'
+                                        : 'https://ui-avatars.com/api/?name=Guest&background=6B7280&color=fff&size=150&rounded=true';
+                                @endphp
+                                <img src="{{ $avatarUrl }}"
+                                     alt="{{ $conversation->nom_prenom ?? 'Avatar' }}"
+                                     onerror="this.src='{{ $fallbackUrl }}'"
+                                     class="w-10 h-10 object-cover">
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-900">{{ $conversation->nom_prenom ?? 'N/A' }}</div>

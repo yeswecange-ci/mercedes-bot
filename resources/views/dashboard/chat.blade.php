@@ -12,8 +12,20 @@
             <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-blue-50">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <div class="h-12 w-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-semibold shadow-lg mr-3">
-                            {{ strtoupper(substr($conversation->nom_prenom ?? 'C', 0, 1)) }}
+                        <div class="h-12 w-12 rounded-full overflow-hidden shadow-lg ring-2 ring-white mr-3">
+                            @php
+                                $avatarUrl = $conversation->is_client
+                                    ? asset('images/avatars/client.gif')
+                                    : asset('images/avatars/non-client.gif');
+
+                                $fallbackUrl = $conversation->is_client
+                                    ? 'https://ui-avatars.com/api/?name=Client&background=0D47A1&color=fff&size=200&rounded=true'
+                                    : 'https://ui-avatars.com/api/?name=Guest&background=6B7280&color=fff&size=200&rounded=true';
+                            @endphp
+                            <img src="{{ $avatarUrl }}"
+                                 alt="{{ $conversation->nom_prenom ?? 'Avatar' }}"
+                                 onerror="this.src='{{ $fallbackUrl }}'"
+                                 class="h-12 w-12 object-cover">
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">
@@ -57,8 +69,20 @@
                     @if($event->event_type === 'message_received' && $event->user_input)
                         <!-- Client Message -->
                         <div class="flex items-start">
-                            <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-medium">
-                                C
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
+                                @php
+                                    $avatarUrl = $conversation->is_client
+                                        ? asset('images/avatars/client.gif')
+                                        : asset('images/avatars/non-client.gif');
+
+                                    $fallbackUrl = $conversation->is_client
+                                        ? 'https://ui-avatars.com/api/?name=C&background=0D47A1&color=fff&size=100&rounded=true'
+                                        : 'https://ui-avatars.com/api/?name=G&background=6B7280&color=fff&size=100&rounded=true';
+                                @endphp
+                                <img src="{{ $avatarUrl }}"
+                                     alt="Client"
+                                     onerror="this.src='{{ $fallbackUrl }}'"
+                                     class="h-8 w-8 object-cover">
                             </div>
                             <div class="ml-3 flex-1">
                                 <div class="bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200 inline-block max-w-lg">

@@ -73,8 +73,21 @@
         <div class="px-6 py-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold shadow-lg">
-                        {{ strtoupper(substr($conversation->nom_prenom ?? $conversation->phone_number, 0, 1)) }}
+                    <div class="h-12 w-12 rounded-full overflow-hidden shadow-lg ring-2 ring-white">
+                        @php
+                            $avatarUrl = $conversation->is_client
+                                ? asset('images/avatars/client.gif')
+                                : asset('images/avatars/non-client.gif');
+
+                            // Fallback to placeholder if files don't exist
+                            $fallbackUrl = $conversation->is_client
+                                ? 'https://ui-avatars.com/api/?name=Client&background=0D47A1&color=fff&size=200&rounded=true'
+                                : 'https://ui-avatars.com/api/?name=Guest&background=6B7280&color=fff&size=200&rounded=true';
+                        @endphp
+                        <img src="{{ $avatarUrl }}"
+                             alt="{{ $conversation->nom_prenom ?? 'Avatar' }}"
+                             onerror="this.src='{{ $fallbackUrl }}'"
+                             class="h-12 w-12 object-cover">
                     </div>
                     <div class="ml-3">
                         <h3 class="text-lg font-semibold text-gray-900">
@@ -236,12 +249,15 @@
                     Client en attente depuis {{ $conversation->transferred_at ? $conversation->transferred_at->diffForHumans() : $conversation->last_activity_at->diffForHumans() }}
                 </div>
                 <div class="flex space-x-2">
-                    <a href="{{ route('dashboard.chat.show', $conversation->id) }}" class="btn-primary py-2 px-4 text-sm shadow-lg hover:shadow-xl transition-all">
-                        <svg class="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                        </svg>
-                        Prendre en charge maintenant
-                    </a>
+                    <form action="{{ route('dashboard.chat.take-over', $conversation->id) }}" method="POST" class="inline-block">
+                        @csrf
+                        <button type="submit" class="btn-primary py-2 px-4 text-sm shadow-lg hover:shadow-xl transition-all">
+                            <svg class="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                            Prendre en charge maintenant
+                        </button>
+                    </form>
                     <a href="{{ route('dashboard.show', $conversation->id) }}" class="btn-secondary py-2 px-4 text-sm">
                         Détails
                     </a>
