@@ -101,7 +101,7 @@
             </a>
 
             <a href="{{ route('dashboard.pending') }}"
-               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.pending')) bg-orange-600 text-white @else text-gray-700 hover:bg-gray-100 @endif"
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.pending')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif"
                x-data="{ pendingCount: {{ \App\Models\Conversation::where('status', 'transferred')->whereNull('agent_id')->count() }} }"
                x-init="setInterval(() => {
                    fetch('/api/dashboard/pending-count', {
@@ -116,7 +116,7 @@
             </a>
 
             <a href="{{ route('dashboard.active') }}"
-               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.active')) bg-green-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.active')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
@@ -132,7 +132,7 @@
             </a>
 
             <a href="{{ route('dashboard.statistics') }}"
-               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.statistics')) bg-purple-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.statistics')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
@@ -140,7 +140,7 @@
             </a>
 
             <a href="{{ route('dashboard.search') }}"
-               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.search')) bg-cyan-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.search')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
@@ -148,7 +148,7 @@
             </a>
 
             <a href="{{ route('dashboard.clients.index') }}"
-               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.clients.*')) bg-indigo-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.clients.*')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
@@ -159,7 +159,7 @@
             <div class="pt-3 mt-3 border-t border-gray-200">
                 <p class="px-3 mb-2 text-xs font-medium text-gray-500 uppercase">Administration</p>
                 <a href="{{ route('dashboard.users.index') }}"
-                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.users.*')) bg-pink-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.users.*')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
