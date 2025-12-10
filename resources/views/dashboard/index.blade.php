@@ -29,16 +29,16 @@
 </div>
 
 <!-- Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <!-- Total Conversations -->
-    <div class="card hover:shadow-md transition-shadow duration-200">
+    <div class="card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Total Conversations</p>
-                <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['total_conversations']) }}</p>
+                <p class="text-xs font-medium text-gray-500 mb-1">Total</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ number_format($stats['total_conversations']) }}</p>
             </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
             </div>
@@ -46,14 +46,14 @@
     </div>
 
     <!-- Active Conversations -->
-    <div class="card hover:shadow-md transition-shadow duration-200">
+    <div class="card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Actives</p>
-                <p class="text-3xl font-bold text-green-600">{{ number_format($stats['active_conversations']) }}</p>
+                <p class="text-xs font-medium text-gray-500 mb-1">Actives</p>
+                <p class="text-2xl font-semibold text-green-600">{{ number_format($stats['active_conversations']) }}</p>
             </div>
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
@@ -61,14 +61,14 @@
     </div>
 
     <!-- Completed Conversations -->
-    <div class="card hover:shadow-md transition-shadow duration-200">
+    <div class="card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Terminées</p>
-                <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['completed_conversations']) }}</p>
+                <p class="text-xs font-medium text-gray-500 mb-1">Terminées</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ number_format($stats['completed_conversations']) }}</p>
             </div>
-            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
@@ -76,14 +76,14 @@
     </div>
 
     <!-- Transferred -->
-    <div class="card hover:shadow-md transition-shadow duration-200">
+    <div class="card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Transférées</p>
-                <p class="text-3xl font-bold text-purple-600">{{ number_format($stats['transferred_conversations']) }}</p>
+                <p class="text-xs font-medium text-gray-500 mb-1">Transférées</p>
+                <p class="text-2xl font-semibold text-purple-600">{{ number_format($stats['transferred_conversations']) }}</p>
             </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
             </div>
@@ -92,160 +92,60 @@
 </div>
 
 <!-- Secondary Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-    <!-- Clients -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Clients</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_clients']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Clients</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['total_clients']) }}</p>
     </div>
-
-    <!-- Non-Clients -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Non-Clients</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_non_clients']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Non-Clients</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['total_non_clients']) }}</p>
     </div>
-
-    <!-- Unique Clients -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Clients Uniques</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['unique_clients']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Clients Uniques</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['unique_clients']) }}</p>
     </div>
-
-    <!-- New Clients -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Nouveaux Clients</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['new_clients']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Nouveaux</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['new_clients']) }}</p>
     </div>
 </div>
 
 <!-- Additional Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-    <!-- Average Duration -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Durée moyenne</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $stats['avg_duration'] ? gmdate('i:s', $stats['avg_duration']) : 'N/A' }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Durée moy.</p>
+        <p class="text-lg font-semibold text-gray-900">{{ $stats['avg_duration'] ? gmdate('i:s', $stats['avg_duration']) : 'N/A' }}</p>
     </div>
-
-    <!-- Total Events -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Total Événements</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_events']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Événements</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['total_events']) }}</p>
     </div>
-
-    <!-- Total Messages -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Messages Reçus</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_messages']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Messages</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['total_messages']) }}</p>
     </div>
-
-    <!-- Menu Choices -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Choix Menu</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_menu_choices']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Choix Menu</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['total_menu_choices']) }}</p>
     </div>
-
-    <!-- Free Inputs -->
     <div class="card">
-        <div class="flex items-center">
-            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-600">Saisies Libres</p>
-                <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_free_inputs']) }}</p>
-            </div>
-        </div>
+        <p class="text-xs text-gray-500 mb-1">Saisies</p>
+        <p class="text-lg font-semibold text-gray-900">{{ number_format($stats['total_free_inputs']) }}</p>
     </div>
 </div>
 
 <!-- Charts Row -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <!-- Menu Distribution Chart -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
     <div class="card">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Distribution des menus</h3>
-        <div class="relative h-64">
+        <h3 class="text-sm font-medium text-gray-900 mb-3">Distribution des menus</h3>
+        <div class="h-48">
             <canvas id="menuChart"></canvas>
         </div>
     </div>
-
-    <!-- Daily Trend Chart -->
     <div class="card">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tendance quotidienne</h3>
-        <div class="relative h-64">
+        <h3 class="text-sm font-medium text-gray-900 mb-3">Tendance quotidienne</h3>
+        <div class="h-48">
             <canvas id="dailyChart"></canvas>
         </div>
     </div>
