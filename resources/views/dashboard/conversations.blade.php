@@ -124,10 +124,10 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3 @if($conversation->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
-                                {{ strtoupper(substr($conversation->nom_prenom ?? 'N', 0, 1)) }}
+                                {{ strtoupper(substr($conversation->display_name ?? 'N', 0, 1)) }}
                             </div>
                             <div>
-                                <div class="text-sm font-medium text-gray-900">{{ $conversation->nom_prenom ?? 'N/A' }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $conversation->display_name ?? 'N/A' }}</div>
                                 @if($conversation->email)
                                 <div class="text-xs text-gray-500">{{ $conversation->email }}</div>
                                 @endif

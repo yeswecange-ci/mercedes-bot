@@ -23,19 +23,38 @@
         @method('PUT')
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Nom Prenom -->
+            <!-- Nom Complet Réel -->
             <div>
-                <label for="nom_prenom" class="block text-sm font-medium text-gray-700 mb-2">
-                    Nom complet
+                <label for="client_full_name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nom complet (réel)
                 </label>
                 <input type="text"
-                       name="nom_prenom"
-                       id="nom_prenom"
-                       value="{{ old('nom_prenom', $client->nom_prenom) }}"
-                       class="input-field @error('nom_prenom') border-red-500 @enderror">
-                @error('nom_prenom')
+                       name="client_full_name"
+                       id="client_full_name"
+                       value="{{ old('client_full_name', $client->client_full_name) }}"
+                       class="input-field @error('client_full_name') border-red-500 @enderror"
+                       placeholder="Jean Dupont">
+                @error('client_full_name')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
+                <p class="mt-1 text-xs text-gray-500">Nom saisi manuellement par le client</p>
+            </div>
+
+            <!-- Nom Profil WhatsApp -->
+            <div>
+                <label for="whatsapp_profile_name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nom profil WhatsApp
+                </label>
+                <input type="text"
+                       name="whatsapp_profile_name"
+                       id="whatsapp_profile_name"
+                       value="{{ old('whatsapp_profile_name', $client->whatsapp_profile_name) }}"
+                       class="input-field bg-gray-50 @error('whatsapp_profile_name') border-red-500 @enderror"
+                       readonly>
+                @error('whatsapp_profile_name')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                <p class="mt-1 text-xs text-gray-500">Mis à jour automatiquement depuis WhatsApp</p>
             </div>
 
             <!-- Phone Number -->

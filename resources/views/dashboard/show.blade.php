@@ -50,7 +50,7 @@
             <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Nom du client</dt>
-                    <dd class="mt-1 text-sm text-gray-900">{{ $conversation->nom_prenom ?? 'N/A' }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $conversation->display_name ?? 'N/A' }}</dd>
                 </div>
 
                 <div>

@@ -173,12 +173,15 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold @if($client->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
-                                {{ strtoupper(substr($client->nom_prenom ?? $client->phone_number, 0, 1)) }}
+                                {{ strtoupper(substr($client->display_name, 0, 1)) }}
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ $client->nom_prenom ?? 'Anonyme' }}
+                                    {{ $client->display_name }}
                                 </div>
+                                @if($client->whatsapp_profile_name && $client->client_full_name && $client->whatsapp_profile_name !== $client->client_full_name)
+                                <div class="text-xs text-gray-400">WhatsApp: {{ $client->whatsapp_profile_name }}</div>
+                                @endif
                                 @if($client->vin)
                                 <div class="text-xs text-gray-500">VIN: {{ $client->vin }}</div>
                                 @endif

@@ -74,11 +74,11 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div class="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg @if($conversation->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
-                        {{ strtoupper(substr($conversation->nom_prenom ?? $conversation->phone_number, 0, 1)) }}
+                        {{ strtoupper(substr($conversation->display_name ?? $conversation->phone_number, 0, 1)) }}
                     </div>
                     <div class="ml-3">
                         <h3 class="text-lg font-semibold text-gray-900">
-                            {{ $conversation->nom_prenom ?? 'Client' }}
+                            {{ $conversation->display_name ?? 'Client' }}
                         </h3>
                         <p class="text-sm text-gray-600">{{ $conversation->phone_number }}</p>
                     </div>

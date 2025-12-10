@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Chat Agent - Mercedes-Benz Bot')
-@section('page-title', 'Chat avec ' . ($conversation->nom_prenom ?? $conversation->phone_number))
+@section('page-title', 'Chat avec ' . ($conversation->display_name ?? $conversation->phone_number))
 
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -13,11 +13,11 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg mr-3 @if($conversation->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
-                            {{ strtoupper(substr($conversation->nom_prenom ?? 'C', 0, 1)) }}
+                            {{ strtoupper(substr($conversation->display_name ?? 'C', 0, 1)) }}
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">
-                                {{ $conversation->nom_prenom ?? 'Client' }}
+                                {{ $conversation->display_name ?? 'Client' }}
                             </h3>
                             <p class="text-sm text-gray-600">{{ $conversation->phone_number }}</p>
                         </div>
@@ -58,7 +58,7 @@
                         <!-- Client Message -->
                         <div class="flex items-start">
                             <div class="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium @if($conversation->is_client) bg-blue-500 @else bg-gray-400 @endif">
-                                {{ strtoupper(substr($conversation->nom_prenom ?? 'C', 0, 1)) }}
+                                {{ strtoupper(substr($conversation->display_name ?? 'C', 0, 1)) }}
                             </div>
                             <div class="ml-3 flex-1">
                                 <div class="bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200 inline-block max-w-lg">
@@ -180,7 +180,7 @@
             <dl class="space-y-3">
                 <div>
                     <dt class="text-xs font-medium text-gray-500 uppercase">Nom</dt>
-                    <dd class="mt-1 text-sm text-gray-900">{{ $conversation->nom_prenom ?? 'N/A' }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $conversation->display_name ?? 'N/A' }}</dd>
                 </div>
                 <div>
                     <dt class="text-xs font-medium text-gray-500 uppercase">Téléphone</dt>
