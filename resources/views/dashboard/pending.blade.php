@@ -73,7 +73,7 @@
         <div class="px-6 py-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <div class="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg @if($conversation->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
+                    <div class="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold @if($conversation->is_client) bg-blue-600 @else bg-gray-600 @endif">
                         {{ strtoupper(substr($conversation->display_name ?? $conversation->phone_number, 0, 1)) }}
                     </div>
                     <div class="ml-3">

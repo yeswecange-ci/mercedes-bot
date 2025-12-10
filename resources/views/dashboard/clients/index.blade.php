@@ -172,7 +172,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold @if($client->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold @if($client->is_client) bg-blue-600 @else bg-gray-600 @endif">
                                 {{ strtoupper(substr($client->display_name, 0, 1)) }}
                             </div>
                             <div class="ml-4">
