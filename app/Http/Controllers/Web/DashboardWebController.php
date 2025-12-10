@@ -19,9 +19,13 @@ class DashboardWebController extends Controller
         $dateFrom = $request->input('date_from', now()->subDays(30)->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
 
+        // Add time to dates to include full day
+        $dateFromFull = $dateFrom . ' 00:00:00';
+        $dateToFull = $dateTo . ' 23:59:59';
+
         // Get overall statistics - ALL filtered by date range for consistency
-        $conversationsInRange = Conversation::whereBetween('started_at', [$dateFrom, $dateTo]);
-        $clientsInRange = \App\Models\Client::whereBetween('last_interaction_at', [$dateFrom, $dateTo]);
+        $conversationsInRange = Conversation::whereBetween('started_at', [$dateFromFull, $dateToFull]);
+        $clientsInRange = \App\Models\Client::whereBetween('last_interaction_at', [$dateFromFull, $dateToFull]);
 
         $stats = [
             'total_conversations' => $conversationsInRange->count(),
@@ -32,23 +36,23 @@ class DashboardWebController extends Controller
             'total_non_clients' => (clone $clientsInRange)->where('is_client', false)->count(),
             'avg_duration' => (clone $conversationsInRange)->whereNotNull('ended_at')->avg('duration_seconds'),
             'total_duration' => (clone $conversationsInRange)->whereNotNull('ended_at')->sum('duration_seconds'),
-            'total_events' => ConversationEvent::whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+            'total_events' => ConversationEvent::whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
             })->count(),
             'total_messages' => ConversationEvent::where('event_type', 'message_received')
-                ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                    $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
                 })->count(),
             'total_menu_choices' => ConversationEvent::where('event_type', 'menu_choice')
-                ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                    $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
                 })->count(),
             'total_free_inputs' => ConversationEvent::where('event_type', 'free_input')
-                ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                    $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
                 })->count(),
             'unique_clients' => (clone $conversationsInRange)->distinct('phone_number')->count('phone_number'),
-            'new_clients' => \App\Models\Client::whereBetween('created_at', [$dateFrom, $dateTo])->count(),
+            'new_clients' => \App\Models\Client::whereBetween('created_at', [$dateFromFull, $dateToFull])->count(),
         ];
 
         // Get daily statistics for chart
@@ -67,7 +71,7 @@ class DashboardWebController extends Controller
 
         // Recent conversations
         $recentConversations = Conversation::with('events')
-            ->whereBetween('started_at', [$dateFrom, $dateTo])
+            ->whereBetween('started_at', [$dateFromFull, $dateToFull])
             ->orderBy('started_at', 'desc')
             ->limit(10)
             ->get();
@@ -123,11 +127,15 @@ class DashboardWebController extends Controller
         $dateTo = $request->input('date_to');
 
         if ($dateFrom && $dateTo) {
-            $query->whereBetween('started_at', [$dateFrom, $dateTo]);
+            $dateFromFull = $dateFrom . ' 00:00:00';
+            $dateToFull = $dateTo . ' 23:59:59';
+            $query->whereBetween('started_at', [$dateFromFull, $dateToFull]);
         } elseif ($dateFrom) {
-            $query->where('started_at', '>=', $dateFrom);
+            $dateFromFull = $dateFrom . ' 00:00:00';
+            $query->where('started_at', '>=', $dateFromFull);
         } elseif ($dateTo) {
-            $query->where('started_at', '<=', $dateTo);
+            $dateToFull = $dateTo . ' 23:59:59';
+            $query->where('started_at', '<=', $dateToFull);
         }
 
         // Status filter
@@ -159,11 +167,15 @@ class DashboardWebController extends Controller
         $baseStatsQuery = Conversation::query();
 
         if ($dateFrom && $dateTo) {
-            $baseStatsQuery->whereBetween('started_at', [$dateFrom, $dateTo]);
+            $dateFromFull = $dateFrom . ' 00:00:00';
+            $dateToFull = $dateTo . ' 23:59:59';
+            $baseStatsQuery->whereBetween('started_at', [$dateFromFull, $dateToFull]);
         } elseif ($dateFrom) {
-            $baseStatsQuery->where('started_at', '>=', $dateFrom);
+            $dateFromFull = $dateFrom . ' 00:00:00';
+            $baseStatsQuery->where('started_at', '>=', $dateFromFull);
         } elseif ($dateTo) {
-            $baseStatsQuery->where('started_at', '<=', $dateTo);
+            $dateToFull = $dateTo . ' 23:59:59';
+            $baseStatsQuery->where('started_at', '<=', $dateToFull);
         }
 
         if ($request->filled('is_client')) {
@@ -211,9 +223,13 @@ class DashboardWebController extends Controller
         $dateFrom = $request->input('date_from', now()->subDays(30)->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
 
+        // Add time to dates to include full day
+        $dateFromFull = $dateFrom . ' 00:00:00';
+        $dateToFull = $dateTo . ' 23:59:59';
+
         // Get overall statistics - CONSISTENT with dashboard
-        $conversationsInRange = Conversation::whereBetween('started_at', [$dateFrom, $dateTo]);
-        $clientsInRange = \App\Models\Client::whereBetween('last_interaction_at', [$dateFrom, $dateTo]);
+        $conversationsInRange = Conversation::whereBetween('started_at', [$dateFromFull, $dateToFull]);
+        $clientsInRange = \App\Models\Client::whereBetween('last_interaction_at', [$dateFromFull, $dateToFull]);
 
         $stats = [
             'total_conversations' => $conversationsInRange->count(),
@@ -224,23 +240,23 @@ class DashboardWebController extends Controller
             'total_non_clients' => (clone $clientsInRange)->where('is_client', false)->count(),
             'avg_duration' => (clone $conversationsInRange)->whereNotNull('ended_at')->avg('duration_seconds'),
             'total_duration' => (clone $conversationsInRange)->whereNotNull('ended_at')->sum('duration_seconds'),
-            'total_events' => ConversationEvent::whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+            'total_events' => ConversationEvent::whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
             })->count(),
             'total_messages' => ConversationEvent::where('event_type', 'message_received')
-                ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                    $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
                 })->count(),
             'total_menu_choices' => ConversationEvent::where('event_type', 'menu_choice')
-                ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                    $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
                 })->count(),
             'total_free_inputs' => ConversationEvent::where('event_type', 'free_input')
-                ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                    $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+                ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                    $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
                 })->count(),
             'unique_clients' => (clone $conversationsInRange)->distinct('phone_number')->count('phone_number'),
-            'new_clients' => \App\Models\Client::whereBetween('created_at', [$dateFrom, $dateTo])->count(),
+            'new_clients' => \App\Models\Client::whereBetween('created_at', [$dateFromFull, $dateToFull])->count(),
         ];
 
         // Get daily statistics for charts
@@ -258,14 +274,14 @@ class DashboardWebController extends Controller
         ];
 
         // Status distribution
-        $statusStats = Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+        $statusStats = Conversation::whereBetween('started_at', [$dateFromFull, $dateToFull])
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
         // Popular paths
-        $popularPaths = Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+        $popularPaths = Conversation::whereBetween('started_at', [$dateFromFull, $dateToFull])
             ->whereNotNull('menu_path')
             ->select('menu_path', DB::raw('count(*) as count'))
             ->groupBy('menu_path')
@@ -274,15 +290,15 @@ class DashboardWebController extends Controller
             ->get();
 
         // Peak hours
-        $peakHours = Conversation::whereBetween('started_at', [$dateFrom, $dateTo])
+        $peakHours = Conversation::whereBetween('started_at', [$dateFromFull, $dateToFull])
             ->select(DB::raw('HOUR(started_at) as hour'), DB::raw('count(*) as count'))
             ->groupBy('hour')
             ->orderBy('hour', 'asc')
             ->get();
 
         // Event type breakdown
-        $eventStats = ConversationEvent::whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+        $eventStats = ConversationEvent::whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
             })
             ->select('event_type', DB::raw('count(*) as count'))
             ->groupBy('event_type')
@@ -291,8 +307,8 @@ class DashboardWebController extends Controller
 
         // Widget usage statistics
         $widgetStats = ConversationEvent::where('event_type', 'free_input')
-            ->whereHas('conversation', function($q) use ($dateFrom, $dateTo) {
-                $q->whereBetween('started_at', [$dateFrom, $dateTo]);
+            ->whereHas('conversation', function($q) use ($dateFromFull, $dateToFull) {
+                $q->whereBetween('started_at', [$dateFromFull, $dateToFull]);
             })
             ->whereNotNull('widget_name')
             ->select('widget_name', DB::raw('count(*) as count'))
