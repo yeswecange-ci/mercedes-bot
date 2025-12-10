@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -7,7 +6,6 @@ use App\Models\Conversation;
 use App\Models\ConversationEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Twilio\TwiML\MessagingResponse;
 
 class TwilioWebhookController extends Controller
 {
@@ -19,24 +17,24 @@ class TwilioWebhookController extends Controller
         try {
             // Validate incoming Twilio data
             $validated = $request->validate([
-                'From' => 'required|string',
-                'Body' => 'nullable|string|max:1600', // WhatsApp message limit
-                'MessageSid' => 'required|string',
-                'ProfileName' => 'nullable|string|max:255',
-                'NumMedia' => 'nullable|integer|min:0',
-                'MediaUrl0' => 'nullable|url',
+                'From'              => 'required|string',
+                'Body'              => 'nullable|string|max:1600', // WhatsApp message limit
+                'MessageSid'        => 'required|string',
+                'ProfileName'       => 'nullable|string|max:255',
+                'NumMedia'          => 'nullable|integer|min:0',
+                'MediaUrl0'         => 'nullable|url',
                 'MediaContentType0' => 'nullable|string',
             ]);
 
             // Log incoming request for debugging
             Log::info('Twilio Incoming Message', $validated);
 
-            // Extract Twilio message data
-            $from = $validated['From']; // Format: whatsapp:+212XXXXXXXXX
-            $body = $validated['Body'] ?? '';
-            $messageId = $validated['MessageSid'];
+                                               // Extract Twilio message data
+            $from        = $validated['From']; // Format: whatsapp:+212XXXXXXXXX
+            $body        = $validated['Body'] ?? '';
+            $messageId   = $validated['MessageSid'];
             $profileName = $validated['ProfileName'] ?? null;
-            $numMedia = $validated['NumMedia'] ?? 0;
+            $numMedia    = $validated['NumMedia'] ?? 0;
 
             // Clean phone number (remove whatsapp: prefix)
             $phoneNumber = str_replace('whatsapp:', '', $from);
@@ -55,27 +53,27 @@ class TwilioWebhookController extends Controller
             $clientExists = $client->wasRecentlyCreated === false && $client->client_full_name !== null;
 
             // If no active or transferred conversation, create a new one
-            if (!$conversation) {
+            if (! $conversation) {
                 $conversation = Conversation::create([
-                    'phone_number' => $phoneNumber,
-                    'session_id' => uniqid('session_', true),
+                    'phone_number'          => $phoneNumber,
+                    'session_id'            => uniqid('session_', true),
                     'whatsapp_profile_name' => $profileName ?? 'Client WhatsApp',
                     // ⚠️ IMPORTANT : Copier le nom complet du client existant
-                    'client_full_name' => $client->client_full_name,
-                    'is_client' => $client->is_client,
-                    'email' => $client->email,
-                    'vin' => $client->vin,
-                    'carte_vip' => $client->carte_vip,
-                    'started_at' => now(),
-                    'last_activity_at' => now(),
-                    'current_menu' => 'main_menu',
-                    'status' => 'active',
+                    'client_full_name'      => $client->client_full_name,
+                    'is_client'             => $client->is_client,
+                    'email'                 => $client->email,
+                    'vin'                   => $client->vin,
+                    'carte_vip'             => $client->carte_vip,
+                    'started_at'            => now(),
+                    'last_activity_at'      => now(),
+                    'current_menu'          => 'main_menu',
+                    'status'                => 'active',
                 ]);
 
                 Log::info('New conversation created with existing client data', [
-                    'phone' => $phoneNumber,
+                    'phone'            => $phoneNumber,
                     'client_full_name' => $client->client_full_name,
-                    'conversation_id' => $conversation->id
+                    'conversation_id'  => $conversation->id,
                 ]);
             } else {
                 // Update last activity and profile name if changed
@@ -86,7 +84,7 @@ class TwilioWebhookController extends Controller
                 }
 
                 // ⚠️ IMPORTANT : Copier le nom du client si la conversation n'en a pas
-                if (!$conversation->client_full_name && $client->client_full_name) {
+                if (! $conversation->client_full_name && $client->client_full_name) {
                     $updates['client_full_name'] = $client->client_full_name;
                 }
 
@@ -102,7 +100,7 @@ class TwilioWebhookController extends Controller
 
             // Prepare metadata for the event
             $metadata = [
-                'message_sid' => $messageId,
+                'message_sid'  => $messageId,
                 'profile_name' => $profileName,
             ];
 
@@ -111,76 +109,76 @@ class TwilioWebhookController extends Controller
                 $mediaItems = [];
 
                 for ($i = 0; $i < min($numMedia, 10); $i++) {
-                    $mediaUrl = $request->input("MediaUrl{$i}");
+                    $mediaUrl  = $request->input("MediaUrl{$i}");
                     $mediaType = $request->input("MediaContentType{$i}");
 
                     if ($mediaUrl) {
                         $mediaItems[] = [
-                            'url' => $mediaUrl,
+                            'url'  => $mediaUrl,
                             'type' => $mediaType,
                         ];
                     }
                 }
 
-                $metadata['media'] = $mediaItems;
+                $metadata['media']       = $mediaItems;
                 $metadata['media_count'] = $numMedia;
             }
 
             // Store the incoming message as an event
             ConversationEvent::create([
                 'conversation_id' => $conversation->id,
-                'event_type' => 'message_received',
-                'user_input' => $body,
-                'metadata' => $metadata,
+                'event_type'      => 'message_received',
+                'user_input'      => $body,
+                'metadata'        => $metadata,
             ]);
 
             // Check if conversation is transferred to an agent
-            $isAgentMode = $conversation->status === 'transferred' && $conversation->agent_id !== null;
+            $isAgentMode    = $conversation->status === 'transferred' && $conversation->agent_id !== null;
             $isPendingAgent = $conversation->status === 'transferred' && $conversation->agent_id === null;
 
             // Return conversation data to Twilio Flow
             return response()->json([
-                'success' => true,
-                'conversation_id' => $conversation->id,
-                'session_id' => $conversation->session_id,
-                'phone_number' => $phoneNumber,
-                'current_menu' => $conversation->current_menu,
-                'is_client' => $client->is_client ?? $conversation->is_client,
-                'client_full_name' => $client->client_full_name ?? $conversation->client_full_name,
+                'success'               => true,
+                'conversation_id'       => $conversation->id,
+                'session_id'            => $conversation->session_id,
+                'phone_number'          => $phoneNumber,
+                'current_menu'          => $conversation->current_menu,
+                'is_client'             => $client->is_client ?? $conversation->is_client,
+                'client_full_name'      => $client->client_full_name ?? $conversation->client_full_name,
                 'whatsapp_profile_name' => $client->whatsapp_profile_name ?? $conversation->whatsapp_profile_name,
-                'profile_name' => $profileName ?? $conversation->whatsapp_profile_name,
-                'message' => $body,
-                'status' => $conversation->status,
-                'agent_mode' => $isAgentMode,
-                'pending_agent' => $isPendingAgent,  // Nouveau: conversation en attente d'agent
-                'has_media' => $numMedia > 0,
-                'media_count' => $numMedia,
-                'client_exists' => $clientExists,
-                'client_has_name' => $client->client_full_name !== null,
-                'client_status_known' => $client->is_client !== null,
+                'profile_name'          => $profileName ?? $conversation->whatsapp_profile_name,
+                'message'               => $body,
+                'status'                => $conversation->status,
+                'agent_mode'            => $isAgentMode ? 'true' : 'false',    // ← STRING
+                'pending_agent'         => $isPendingAgent ? 'true' : 'false', // ← STRING
+                'has_media'             => $numMedia > 0,
+                'media_count'           => $numMedia,
+                'client_exists'         => $clientExists ? 'true' : 'false',                        // ← STRING
+                'client_has_name'       => ($client->client_full_name !== null) ? 'true' : 'false', // ← STRING
+                'client_status_known'   => ($client->is_client !== null) ? 'true' : 'false',        // ← STRING
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Twilio Webhook Validation Error', [
-                'errors' => $e->errors(),
+                'errors'  => $e->errors(),
                 'request' => $request->all(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'error' => 'Invalid request data',
+                'error'   => 'Invalid request data',
                 'details' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
             Log::error('Twilio Webhook Error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -194,18 +192,18 @@ class TwilioWebhookController extends Controller
             Log::info('Twilio Menu Choice', $request->all());
 
             $conversationId = $request->input('conversation_id');
-            $menuChoice = $request->input('menu_choice');
-            $userInput = $request->input('user_input');
+            $menuChoice     = $request->input('menu_choice');
+            $userInput      = $request->input('user_input');
 
             $conversation = Conversation::find($conversationId);
 
-            if (!$conversation) {
+            if (! $conversation) {
                 return response()->json(['success' => false, 'error' => 'Conversation not found'], 404);
             }
 
             // Update conversation menu
             $conversation->update([
-                'current_menu' => $menuChoice,
+                'current_menu'     => $menuChoice,
                 'last_activity_at' => now(),
             ]);
 
@@ -219,15 +217,15 @@ class TwilioWebhookController extends Controller
             // Store event
             ConversationEvent::create([
                 'conversation_id' => $conversation->id,
-                'event_type' => 'menu_choice',
-                'user_input' => $userInput,
-                'metadata' => ['menu_choice' => $menuChoice],
+                'event_type'      => 'menu_choice',
+                'user_input'      => $userInput,
+                'metadata'        => ['menu_choice' => $menuChoice],
             ]);
 
             return response()->json([
-                'success' => true,
+                'success'      => true,
                 'current_menu' => $menuChoice,
-                'menu_path' => $menuPath,
+                'menu_path'    => $menuPath,
             ]);
 
         } catch (\Exception $e) {
@@ -245,12 +243,12 @@ class TwilioWebhookController extends Controller
             Log::info('Twilio Free Input', $request->all());
 
             $conversationId = $request->input('conversation_id');
-            $userInput = $request->input('user_input');
-            $widgetName = $request->input('widget_name');
+            $userInput      = $request->input('user_input');
+            $widgetName     = $request->input('widget_name');
 
             $conversation = Conversation::find($conversationId);
 
-            if (!$conversation) {
+            if (! $conversation) {
                 return response()->json(['success' => false, 'error' => 'Conversation not found'], 404);
             }
 
@@ -260,9 +258,9 @@ class TwilioWebhookController extends Controller
             // Store free input event
             ConversationEvent::create([
                 'conversation_id' => $conversation->id,
-                'event_type' => 'free_input',
-                'user_input' => $userInput,
-                'widget_name' => $widgetName,
+                'event_type'      => 'free_input',
+                'user_input'      => $userInput,
+                'widget_name'     => $widgetName,
             ]);
 
             // Update conversation data based on widget
@@ -270,7 +268,7 @@ class TwilioWebhookController extends Controller
 
             return response()->json([
                 'success' => true,
-                'stored' => true,
+                'stored'  => true,
             ]);
 
         } catch (\Exception $e) {
@@ -288,33 +286,33 @@ class TwilioWebhookController extends Controller
             Log::info('Twilio Agent Transfer', $request->all());
 
             $conversationId = $request->input('conversation_id');
-            $conversation = Conversation::find($conversationId);
+            $conversation   = Conversation::find($conversationId);
 
-            if (!$conversation) {
+            if (! $conversation) {
                 return response()->json(['success' => false, 'error' => 'Conversation not found'], 404);
             }
 
             // Update conversation status
             $conversation->update([
-                'status' => 'transferred',
-                'transferred_at' => now(),
+                'status'           => 'transferred',
+                'transferred_at'   => now(),
                 'last_activity_at' => now(),
             ]);
 
             // Store transfer event
             ConversationEvent::create([
                 'conversation_id' => $conversation->id,
-                'event_type' => 'agent_transfer',
-                'metadata' => ['reason' => $request->input('reason')],
+                'event_type'      => 'agent_transfer',
+                'metadata'        => ['reason' => $request->input('reason')],
             ]);
 
             // TODO: Integrate with Chatwoot or your live chat system
             // $this->transferToChatwoot($conversation);
 
             return response()->json([
-                'success' => true,
+                'success'     => true,
                 'transferred' => true,
-                'message' => 'Conversation transférée à un agent',
+                'message'     => 'Conversation transférée à un agent',
             ]);
 
         } catch (\Exception $e) {
@@ -332,27 +330,27 @@ class TwilioWebhookController extends Controller
             Log::info('Twilio Complete Conversation', $request->all());
 
             $conversationId = $request->input('conversation_id');
-            $conversation = Conversation::find($conversationId);
+            $conversation   = Conversation::find($conversationId);
 
-            if (!$conversation) {
+            if (! $conversation) {
                 return response()->json(['success' => false, 'error' => 'Conversation not found'], 404);
             }
 
             // Calculate duration
             $durationSeconds = $conversation->started_at ?
-                $conversation->started_at->diffInSeconds(now()) : 0;
+            $conversation->started_at->diffInSeconds(now()) : 0;
 
             // Update conversation
             $conversation->update([
-                'status' => 'completed',
-                'ended_at' => now(),
+                'status'           => 'completed',
+                'ended_at'         => now(),
                 'duration_seconds' => $durationSeconds,
                 'last_activity_at' => now(),
             ]);
 
             return response()->json([
-                'success' => true,
-                'completed' => true,
+                'success'          => true,
+                'completed'        => true,
                 'duration_seconds' => $durationSeconds,
             ]);
 
@@ -368,14 +366,14 @@ class TwilioWebhookController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'phone_number' => 'required',
-            'message' => 'required|string',
+            'phone_number'    => 'required',
+            'message'         => 'required|string',
             'conversation_id' => 'nullable|exists:conversations,id',
         ]);
 
         try {
             $phoneNumber = $request->phone_number;
-            $message = $request->message;
+            $message     = $request->message;
 
             // Send via Twilio
             $twilio = new \Twilio\Rest\Client(
@@ -395,14 +393,14 @@ class TwilioWebhookController extends Controller
             if ($request->conversation_id) {
                 ConversationEvent::create([
                     'conversation_id' => $request->conversation_id,
-                    'event_type' => 'message_sent',
-                    'bot_message' => $message,
-                    'metadata' => ['message_sid' => $twilioMessage->sid],
+                    'event_type'      => 'message_sent',
+                    'bot_message'     => $message,
+                    'metadata'        => ['message_sid' => $twilioMessage->sid],
                 ]);
             }
 
             return response()->json([
-                'success' => true,
+                'success'     => true,
                 'message_sid' => $twilioMessage->sid,
             ]);
 
@@ -423,20 +421,20 @@ class TwilioWebhookController extends Controller
                 $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
 
                 // ⚠️ IMPORTANT : Ne PAS écraser si le client a déjà un nom complet
-                if (!$client->client_full_name) {
+                if (! $client->client_full_name) {
                     $client->update(['client_full_name' => $userInput]);
                     // Stocker aussi dans la conversation
                     $conversation->update(['client_full_name' => $userInput]);
 
                     Log::info('Client full name saved', [
                         'phone' => $conversation->phone_number,
-                        'name' => $userInput
+                        'name'  => $userInput,
                     ]);
                 } else {
                     Log::warning('Attempted to overwrite existing client_full_name', [
-                        'phone' => $conversation->phone_number,
-                        'existing_name' => $client->client_full_name,
-                        'attempted_name' => $userInput
+                        'phone'          => $conversation->phone_number,
+                        'existing_name'  => $client->client_full_name,
+                        'attempted_name' => $userInput,
                     ]);
 
                     // Copier le nom existant dans la conversation
@@ -449,7 +447,7 @@ class TwilioWebhookController extends Controller
 
                 // Synchroniser avec la table clients
                 $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
-                if (!$client->email) {
+                if (! $client->email) {
                     $client->update(['email' => $userInput]);
                 }
                 break;
@@ -459,7 +457,7 @@ class TwilioWebhookController extends Controller
 
                 // Synchroniser avec la table clients
                 $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
-                if (!$client->vin) {
+                if (! $client->vin) {
                     $client->update(['vin' => $userInput]);
                 }
                 break;
@@ -469,7 +467,7 @@ class TwilioWebhookController extends Controller
 
                 // Synchroniser avec la table clients
                 $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
-                if (!$client->carte_vip) {
+                if (! $client->carte_vip) {
                     $client->update(['carte_vip' => $userInput]);
                 }
                 break;
