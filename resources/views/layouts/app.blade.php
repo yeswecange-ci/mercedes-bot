@@ -172,7 +172,7 @@
         <!-- User Profile -->
         <div class="border-t border-gray-200 flex-shrink-0" x-data="{ userMenuOpen: false }">
             <button @click="userMenuOpen = !userMenuOpen" class="flex items-center w-full px-4 py-3 text-sm hover:bg-gray-50">
-                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
                 <div class="ml-3 text-left flex-1 min-w-0">
