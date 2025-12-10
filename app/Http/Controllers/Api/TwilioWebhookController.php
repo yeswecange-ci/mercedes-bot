@@ -140,7 +140,7 @@ class TwilioWebhookController extends Controller
 
             // Return conversation data to Twilio Flow
             // IMPORTANT: Twilio Flow compare avec des chaînes "true"/"false", pas des booléens
-            return response()->json([
+            $responseData = [
                 'success' => true,
                 'conversation_id' => $conversation->id,
                 'session_id' => $conversation->session_id,
@@ -159,7 +159,17 @@ class TwilioWebhookController extends Controller
                 'client_exists' => $clientExists ? 'true' : 'false',
                 'client_has_name' => $client->client_full_name !== null ? 'true' : 'false',
                 'client_status_known' => $client->is_client !== null ? 'true' : 'false',
+            ];
+
+            // Log pour debugging
+            Log::info('API Response to Twilio', [
+                'phone' => $phoneNumber,
+                'client_has_name' => $responseData['client_has_name'],
+                'client_status_known' => $responseData['client_status_known'],
+                'client_full_name' => $responseData['client_full_name'],
             ]);
+
+            return response()->json($responseData);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Twilio Webhook Validation Error', [
