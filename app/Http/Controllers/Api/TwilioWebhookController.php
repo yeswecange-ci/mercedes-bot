@@ -48,16 +48,34 @@ class TwilioWebhookController extends Controller
                 ->latest()
                 ->first();
 
+            // Synchronize with Client table FIRST to get existing data
+            $client = \App\Models\Client::findOrCreateByPhone($phoneNumber);
+
+            // Check if client already exists (has interaction history)
+            $clientExists = $client->wasRecentlyCreated === false && $client->client_full_name !== null;
+
             // If no active or transferred conversation, create a new one
             if (!$conversation) {
                 $conversation = Conversation::create([
                     'phone_number' => $phoneNumber,
                     'session_id' => uniqid('session_', true),
                     'whatsapp_profile_name' => $profileName ?? 'Client WhatsApp',
+                    // ⚠️ IMPORTANT : Copier le nom complet du client existant
+                    'client_full_name' => $client->client_full_name,
+                    'is_client' => $client->is_client,
+                    'email' => $client->email,
+                    'vin' => $client->vin,
+                    'carte_vip' => $client->carte_vip,
                     'started_at' => now(),
                     'last_activity_at' => now(),
                     'current_menu' => 'main_menu',
                     'status' => 'active',
+                ]);
+
+                Log::info('New conversation created with existing client data', [
+                    'phone' => $phoneNumber,
+                    'client_full_name' => $client->client_full_name,
+                    'conversation_id' => $conversation->id
                 ]);
             } else {
                 // Update last activity and profile name if changed
@@ -67,14 +85,13 @@ class TwilioWebhookController extends Controller
                     $updates['whatsapp_profile_name'] = $profileName;
                 }
 
+                // ⚠️ IMPORTANT : Copier le nom du client si la conversation n'en a pas
+                if (!$conversation->client_full_name && $client->client_full_name) {
+                    $updates['client_full_name'] = $client->client_full_name;
+                }
+
                 $conversation->update($updates);
             }
-
-            // Synchronize with Client table
-            $client = \App\Models\Client::findOrCreateByPhone($phoneNumber);
-
-            // Check if client already exists (has interaction history)
-            $clientExists = $client->wasRecentlyCreated === false && $client->client_full_name !== null;
 
             // Update client information - update WhatsApp profile name (always)
             if ($profileName) {
@@ -402,12 +419,29 @@ class TwilioWebhookController extends Controller
     {
         switch ($widgetName) {
             case 'collect_name':
-                // Stocker le nom saisi manuellement dans client_full_name
-                $conversation->update(['client_full_name' => $userInput]);
-
                 // Synchroniser avec la table clients
                 $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
-                $client->update(['client_full_name' => $userInput]);
+
+                // ⚠️ IMPORTANT : Ne PAS écraser si le client a déjà un nom complet
+                if (!$client->client_full_name) {
+                    $client->update(['client_full_name' => $userInput]);
+                    // Stocker aussi dans la conversation
+                    $conversation->update(['client_full_name' => $userInput]);
+
+                    Log::info('Client full name saved', [
+                        'phone' => $conversation->phone_number,
+                        'name' => $userInput
+                    ]);
+                } else {
+                    Log::warning('Attempted to overwrite existing client_full_name', [
+                        'phone' => $conversation->phone_number,
+                        'existing_name' => $client->client_full_name,
+                        'attempted_name' => $userInput
+                    ]);
+
+                    // Copier le nom existant dans la conversation
+                    $conversation->update(['client_full_name' => $client->client_full_name]);
+                }
                 break;
 
             case 'collect_email':
