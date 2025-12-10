@@ -93,81 +93,77 @@
         <!-- Navigation -->
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
             <a href="{{ route('dashboard') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard')) bg-blue-600 text-white shadow-sm @else text-gray-700 hover:bg-blue-50 hover:text-blue-600 @endif">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">Dashboard</span>
+                Dashboard
             </a>
 
             <a href="{{ route('dashboard.pending') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.pending')) bg-orange-600 text-white shadow-sm @else text-gray-700 hover:bg-orange-50 hover:text-orange-600 @endif"
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.pending')) bg-orange-600 text-white @else text-gray-700 hover:bg-gray-100 @endif"
                x-data="{ pendingCount: {{ \App\Models\Conversation::where('status', 'transferred')->whereNull('agent_id')->count() }} }"
                x-init="setInterval(() => {
                    fetch('/api/dashboard/pending-count', {
                        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') }
                    }).then(r => r.json()).then(data => pendingCount = data.count).catch(() => {});
                }, 5000)">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.pending')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">En attente agent</span>
-                <span x-show="pendingCount > 0"
-                      x-cloak
-                      x-transition
-                      class="flex-shrink-0 px-2 py-0.5 text-xs font-bold rounded-full pulse-badge @if(request()->routeIs('dashboard.pending')) bg-white text-orange-600 @else bg-orange-600 text-white @endif"
-                      x-text="pendingCount"></span>
+                <span class="flex-1">En attente agent</span>
+                <span x-show="pendingCount > 0" class="px-2 py-0.5 text-xs font-semibold rounded-full @if(request()->routeIs('dashboard.pending')) bg-white/20 @else bg-red-600 text-white @endif" x-text="pendingCount"></span>
             </a>
 
             <a href="{{ route('dashboard.active') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.active')) bg-green-600 text-white shadow-sm @else text-gray-700 hover:bg-green-50 hover:text-green-600 @endif">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.active')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.active')) bg-green-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">Conversations actives</span>
+                Conversations actives
             </a>
 
             <a href="{{ route('dashboard.conversations') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.conversations') || request()->routeIs('dashboard.show')) bg-blue-600 text-white shadow-sm @else text-gray-700 hover:bg-blue-50 hover:text-blue-600 @endif">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.conversations') && !request()->routeIs('dashboard.show')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.conversations') || request()->routeIs('dashboard.show')) bg-blue-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">Toutes les conversations</span>
+                Toutes les conversations
             </a>
 
             <a href="{{ route('dashboard.statistics') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.statistics')) bg-purple-600 text-white shadow-sm @else text-gray-700 hover:bg-purple-50 hover:text-purple-600 @endif">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.statistics')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.statistics')) bg-purple-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">Statistiques</span>
+                Statistiques
             </a>
 
             <a href="{{ route('dashboard.search') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.search')) bg-cyan-600 text-white shadow-sm @else text-gray-700 hover:bg-cyan-50 hover:text-cyan-600 @endif">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.search')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.search')) bg-cyan-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">Recherche</span>
+                Recherche
             </a>
 
             <a href="{{ route('dashboard.clients.index') }}"
-               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.clients.*')) bg-indigo-600 text-white shadow-sm @else text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 @endif">
-                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.clients.*')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.clients.*')) bg-indigo-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
-                <span class="flex-1 min-w-0 truncate">Clients</span>
+                Clients
             </a>
 
             @if(auth()->user()->canManageUsers())
             <div class="pt-3 mt-3 border-t border-gray-200">
-                <p class="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</p>
+                <p class="px-3 mb-2 text-xs font-medium text-gray-500 uppercase">Administration</p>
                 <a href="{{ route('dashboard.users.index') }}"
-                   class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.users.*')) bg-pink-600 text-white shadow-sm @else text-gray-700 hover:bg-pink-50 hover:text-pink-600 @endif">
-                    <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.users.*')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg @if(request()->routeIs('dashboard.users.*')) bg-pink-600 text-white @else text-gray-700 hover:bg-gray-100 @endif">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
-                    <span class="flex-1 min-w-0 truncate">Utilisateurs</span>
+                    Utilisateurs
                 </a>
             </div>
             @endif
@@ -175,42 +171,27 @@
 
         <!-- User Profile -->
         <div class="border-t border-gray-200 flex-shrink-0" x-data="{ userMenuOpen: false }">
-            <button @click="userMenuOpen = !userMenuOpen"
-                    type="button"
-                    class="flex items-center w-full px-4 py-3 text-sm hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
-                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <button @click="userMenuOpen = !userMenuOpen" class="flex items-center w-full px-4 py-3 text-sm hover:bg-gray-50">
+                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
                 <div class="ml-3 text-left flex-1 min-w-0">
-                    <div class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</div>
-                    <div class="text-xs text-gray-500 truncate">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</div>
+                    <div class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->name }}</div>
+                    <div class="text-xs text-gray-500">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</div>
                 </div>
-                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
-                     :class="{ 'rotate-180': userMenuOpen }"
-                     fill="none"
-                     stroke="currentColor"
-                     viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" :class="{ 'rotate-180': userMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
 
-            <div x-show="userMenuOpen"
-                 x-cloak
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="px-3 pb-3">
+            <div x-show="userMenuOpen" x-cloak class="px-3 pb-3">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit"
-                            class="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150">
-                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="submit" class="flex items-center w-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
-                        <span class="truncate">Déconnexion</span>
+                        Déconnexion
                     </button>
                 </form>
             </div>
@@ -249,14 +230,12 @@
                 <div class="flex items-center gap-2 sm:gap-4 ml-4">
                     <!-- Notifications -->
                     <div class="relative" x-data="{ notifOpen: false }">
-                        <button @click="notifOpen = !notifOpen"
-                                type="button"
-                                class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors duration-150">
+                        <button @click="notifOpen = !notifOpen" class="relative p-2 text-gray-500 hover:text-gray-700 rounded-lg">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
                             @if(isset($activeCount) && $activeCount > 0)
-                            <span class="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white pulse-badge"></span>
+                            <span class="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500"></span>
                             @endif
                         </button>
 

@@ -123,7 +123,7 @@
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3 @if($conversation->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3 @if($conversation->is_client) bg-blue-600 @else bg-gray-600 @endif">
                                 {{ strtoupper(substr($conversation->display_name ?? 'N', 0, 1)) }}
                             </div>
                             <div>
