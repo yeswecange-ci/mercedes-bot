@@ -22,7 +22,8 @@ class ClientController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('phone_number', 'like', "%{$search}%")
-                  ->orWhere('nom_prenom', 'like', "%{$search}%")
+                  ->orWhere('client_full_name', 'like', "%{$search}%")
+                  ->orWhere('whatsapp_profile_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -74,22 +75,48 @@ class ClientController extends Controller
 
         // Get all conversations for this client
         $conversations = Conversation::where('phone_number', $client->phone_number)
-            ->with('events')
+            ->with(['events' => function($query) {
+                $query->orderBy('event_at', 'desc');
+            }, 'agent'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // Get interaction statistics
-        $interactionStats = [
-            'total_messages' => ConversationEvent::whereIn('conversation_id',
-                Conversation::where('phone_number', $client->phone_number)->pluck('id')
-            )->where('event_type', 'free_input')->count(),
+        // Get all events for this client across all conversations
+        $allEvents = ConversationEvent::whereIn('conversation_id',
+            Conversation::where('phone_number', $client->phone_number)->pluck('id')
+        )->orderBy('event_at', 'desc')->paginate(20, ['*'], 'events_page');
 
-            'menu_choices' => ConversationEvent::whereIn('conversation_id',
-                Conversation::where('phone_number', $client->phone_number)->pluck('id')
-            )->where('event_type', 'menu_choice')->count(),
+        // Get interaction statistics
+        $conversationIds = Conversation::where('phone_number', $client->phone_number)->pluck('id');
+
+        $interactionStats = [
+            'total_messages' => ConversationEvent::whereIn('conversation_id', $conversationIds)
+                ->where('event_type', 'free_input')
+                ->count(),
+
+            'menu_choices' => ConversationEvent::whereIn('conversation_id', $conversationIds)
+                ->where('event_type', 'menu_choice')
+                ->count(),
+
+            'agent_transfers' => ConversationEvent::whereIn('conversation_id', $conversationIds)
+                ->where('event_type', 'agent_transfer')
+                ->count(),
+
+            'total_duration' => $client->total_duration,
+
+            'avg_duration' => Conversation::where('phone_number', $client->phone_number)
+                ->whereNotNull('duration_seconds')
+                ->avg('duration_seconds'),
         ];
 
-        return view('dashboard.clients.show', compact('client', 'conversations', 'interactionStats'));
+        // Get event type breakdown
+        $eventBreakdown = ConversationEvent::whereIn('conversation_id', $conversationIds)
+            ->selectRaw('event_type, count(*) as count')
+            ->groupBy('event_type')
+            ->pluck('count', 'event_type')
+            ->toArray();
+
+        return view('dashboard.clients.show', compact('client', 'conversations', 'interactionStats', 'allEvents', 'eventBreakdown'));
     }
 
     /**
@@ -109,7 +136,8 @@ class ClientController extends Controller
         $client = Client::findOrFail($id);
 
         $validated = $request->validate([
-            'nom_prenom' => 'nullable|string|max:255',
+            'client_full_name' => 'nullable|string|max:255',
+            'whatsapp_profile_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone_number' => 'required|string|max:50',
             'is_client' => 'nullable|boolean',
@@ -122,7 +150,7 @@ class ClientController extends Controller
 
         \App\Models\ActivityLog::log(
             'client_updated',
-            "Client {$client->nom_prenom} ({$client->phone_number}) a été mis à jour",
+            "Client {$client->display_name} ({$client->phone_number}) a été mis à jour",
             $client,
             [
                 'old' => $oldData,

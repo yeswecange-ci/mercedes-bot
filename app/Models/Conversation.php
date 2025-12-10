@@ -14,7 +14,8 @@ class Conversation extends Model
     protected $fillable = [
         'session_id',
         'phone_number',
-        'nom_prenom',
+        'whatsapp_profile_name',
+        'client_full_name',
         'is_client',
         'email',
         'vin',
@@ -176,5 +177,22 @@ class Conversation extends Model
         $this->chatwoot_conversation_id = $chatwootConversationId;
         $this->transferred_at = now();
         return $this->save();
+    }
+
+    /**
+     * Get the display name for the conversation
+     * Returns client_full_name if available, otherwise whatsapp_profile_name
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->client_full_name ?? $this->whatsapp_profile_name ?? 'Client inconnu';
+    }
+
+    /**
+     * Check if client has provided their full name
+     */
+    public function hasFullName(): bool
+    {
+        return !empty($this->client_full_name);
     }
 }

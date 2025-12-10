@@ -28,11 +28,14 @@
     <div class="flex items-start justify-between">
         <div class="flex items-center">
             <div class="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-semibold shadow-lg @if($client->is_client) bg-gradient-to-br from-blue-500 to-blue-700 @else bg-gradient-to-br from-gray-500 to-gray-700 @endif">
-                {{ strtoupper(substr($client->nom_prenom ?? $client->phone_number, 0, 1)) }}
+                {{ strtoupper(substr($client->display_name, 0, 1)) }}
             </div>
             <div class="ml-4">
-                <h2 class="text-2xl font-bold text-gray-900">{{ $client->nom_prenom ?? 'Client Anonyme' }}</h2>
+                <h2 class="text-2xl font-bold text-gray-900">{{ $client->display_name }}</h2>
                 <p class="text-sm text-gray-500">{{ $client->phone_number }}</p>
+                @if($client->whatsapp_profile_name && $client->client_full_name)
+                <p class="text-xs text-gray-400">Profil WhatsApp: {{ $client->whatsapp_profile_name }}</p>
+                @endif
                 @if($client->email)
                 <p class="text-sm text-gray-500">{{ $client->email }}</p>
                 @endif
@@ -229,6 +232,141 @@
             {{ $conversations->links() }}
         </div>
         @endif
+        @endif
+    </div>
+</div>
+
+<!-- Historique complet des événements -->
+<div class="bg-white shadow rounded-lg p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Historique complet des événements</h3>
+        <span class="text-sm text-gray-500">{{ number_format($allEvents->total()) }} événements au total</span>
+    </div>
+
+    @if($allEvents->isEmpty())
+    <div class="text-center py-8">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="mt-2 text-sm text-gray-500">Aucun événement enregistré</p>
+    </div>
+    @else
+    <!-- Event Type Breakdown -->
+    <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        @foreach($eventBreakdown as $type => $count)
+        <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs font-medium text-gray-500 uppercase">{{ str_replace('_', ' ', $type) }}</p>
+            <p class="mt-1 text-2xl font-bold text-gray-900">{{ number_format($count) }}</p>
+        </div>
+        @endforeach
+    </div>
+
+    <!-- Timeline of Events -->
+    <div class="relative">
+        <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200 ml-3"></div>
+
+        <div class="space-y-4">
+            @foreach($allEvents as $event)
+            <div class="relative flex items-start pl-8">
+                <!-- Timeline dot -->
+                <div class="absolute left-0 w-6 h-6 rounded-full flex items-center justify-center
+                    @if($event->event_type === 'message_received') bg-green-500
+                    @elseif($event->event_type === 'message_sent') bg-blue-500
+                    @elseif($event->event_type === 'agent_message') bg-purple-500
+                    @elseif($event->event_type === 'agent_transfer') bg-orange-500
+                    @elseif($event->event_type === 'menu_choice') bg-indigo-500
+                    @elseif($event->event_type === 'free_input') bg-cyan-500
+                    @else bg-gray-500
+                    @endif">
+                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="4"/>
+                    </svg>
+                </div>
+
+                <!-- Event card -->
+                <div class="flex-1 bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                @if($event->event_type === 'message_received') bg-green-100 text-green-800
+                                @elseif($event->event_type === 'message_sent') bg-blue-100 text-blue-800
+                                @elseif($event->event_type === 'agent_message') bg-purple-100 text-purple-800
+                                @elseif($event->event_type === 'agent_transfer') bg-orange-100 text-orange-800
+                                @elseif($event->event_type === 'menu_choice') bg-indigo-100 text-indigo-800
+                                @elseif($event->event_type === 'free_input') bg-cyan-100 text-cyan-800
+                                @else bg-gray-100 text-gray-800
+                                @endif">
+                                {{ ucfirst(str_replace('_', ' ', $event->event_type)) }}
+                            </span>
+
+                            @if($event->widget_name)
+                            <span class="text-xs text-gray-500">{{ $event->widget_name }}</span>
+                            @endif
+                        </div>
+
+                        <span class="text-xs text-gray-400">{{ $event->event_at->format('d/m/Y H:i:s') }}</span>
+                    </div>
+
+                    @if($event->user_input)
+                    <div class="mb-2">
+                        <p class="text-sm text-gray-600"><strong>Input:</strong></p>
+                        <p class="text-sm text-gray-900 bg-gray-50 rounded px-3 py-2 mt-1">{{ $event->user_input }}</p>
+                    </div>
+                    @endif
+
+                    @if($event->bot_message)
+                    <div class="mb-2">
+                        <p class="text-sm text-gray-600"><strong>Réponse bot:</strong></p>
+                        <p class="text-sm text-gray-900 bg-blue-50 rounded px-3 py-2 mt-1">{{ $event->bot_message }}</p>
+                    </div>
+                    @endif
+
+                    @if($event->metadata)
+                    <details class="mt-2">
+                        <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">Métadonnées</summary>
+                        <pre class="mt-2 text-xs bg-gray-50 rounded p-2 overflow-x-auto">{{ json_encode($event->metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                    </details>
+                    @endif
+
+                    @if($event->response_time_ms)
+                    <div class="mt-2 text-xs text-gray-500">
+                        Temps de réponse: {{ $event->response_time_ms }}ms
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Pagination des événements -->
+    @if($allEvents->hasPages())
+    <div class="mt-6">
+        {{ $allEvents->links() }}
+    </div>
+    @endif
+    @endif
+</div>
+
+<!-- Total Duration Statistics -->
+<div class="bg-white shadow rounded-lg p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Statistiques de temps</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <p class="text-sm font-medium text-gray-500">Durée totale de connexion</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900">{{ gmdate('H:i:s', $interactionStats['total_duration'] ?? 0) }}</p>
+        </div>
+
+        <div>
+            <p class="text-sm font-medium text-gray-500">Durée moyenne par conversation</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900">{{ gmdate('i:s', $interactionStats['avg_duration'] ?? 0) }}</p>
+        </div>
+
+        @if($interactionStats['agent_transfers'] > 0)
+        <div>
+            <p class="text-sm font-medium text-gray-500">Transferts vers agents</p>
+            <p class="mt-1 text-3xl font-bold text-orange-600">{{ $interactionStats['agent_transfers'] }}</p>
+        </div>
         @endif
     </div>
 </div>

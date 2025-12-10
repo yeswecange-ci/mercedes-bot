@@ -53,7 +53,7 @@ class TwilioWebhookController extends Controller
                 $conversation = Conversation::create([
                     'phone_number' => $phoneNumber,
                     'session_id' => uniqid('session_', true),
-                    'nom_prenom' => $profileName ?? 'Client WhatsApp',
+                    'whatsapp_profile_name' => $profileName ?? 'Client WhatsApp',
                     'started_at' => now(),
                     'last_activity_at' => now(),
                     'current_menu' => 'main_menu',
@@ -63,8 +63,8 @@ class TwilioWebhookController extends Controller
                 // Update last activity and profile name if changed
                 $updates = ['last_activity_at' => now()];
 
-                if ($profileName && $conversation->nom_prenom !== $profileName) {
-                    $updates['nom_prenom'] = $profileName;
+                if ($profileName && $conversation->whatsapp_profile_name !== $profileName) {
+                    $updates['whatsapp_profile_name'] = $profileName;
                 }
 
                 $conversation->update($updates);
@@ -74,11 +74,11 @@ class TwilioWebhookController extends Controller
             $client = \App\Models\Client::findOrCreateByPhone($phoneNumber);
 
             // Check if client already exists (has interaction history)
-            $clientExists = $client->wasRecentlyCreated === false && $client->nom_prenom !== null;
+            $clientExists = $client->wasRecentlyCreated === false && $client->client_full_name !== null;
 
-            // Update client information
-            if ($profileName && !$client->nom_prenom) {
-                $client->update(['nom_prenom' => $profileName]);
+            // Update client information - update WhatsApp profile name (always)
+            if ($profileName) {
+                $client->update(['whatsapp_profile_name' => $profileName]);
             }
 
             $client->incrementInteractions();
@@ -129,8 +129,9 @@ class TwilioWebhookController extends Controller
                 'phone_number' => $phoneNumber,
                 'current_menu' => $conversation->current_menu,
                 'is_client' => $client->is_client ?? $conversation->is_client,
-                'nom_prenom' => $client->nom_prenom ?? $conversation->nom_prenom,
-                'profile_name' => $profileName ?? $conversation->nom_prenom,
+                'client_full_name' => $client->client_full_name ?? $conversation->client_full_name,
+                'whatsapp_profile_name' => $client->whatsapp_profile_name ?? $conversation->whatsapp_profile_name,
+                'profile_name' => $profileName ?? $conversation->whatsapp_profile_name,
                 'message' => $body,
                 'status' => $conversation->status,
                 'agent_mode' => $isAgentMode,
@@ -138,7 +139,7 @@ class TwilioWebhookController extends Controller
                 'has_media' => $numMedia > 0,
                 'media_count' => $numMedia,
                 'client_exists' => $clientExists,
-                'client_has_name' => $client->nom_prenom !== null,
+                'client_has_name' => $client->client_full_name !== null,
                 'client_status_known' => $client->is_client !== null,
             ]);
 
@@ -401,19 +402,53 @@ class TwilioWebhookController extends Controller
     {
         switch ($widgetName) {
             case 'collect_name':
-                $conversation->update(['nom_prenom' => $userInput]);
+                // Stocker le nom saisi manuellement dans client_full_name
+                $conversation->update(['client_full_name' => $userInput]);
+
+                // Synchroniser avec la table clients
+                $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
+                $client->update(['client_full_name' => $userInput]);
                 break;
+
             case 'collect_email':
                 $conversation->update(['email' => $userInput]);
+
+                // Synchroniser avec la table clients
+                $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
+                if (!$client->email) {
+                    $client->update(['email' => $userInput]);
+                }
                 break;
+
             case 'collect_vin':
                 $conversation->update(['vin' => $userInput]);
+
+                // Synchroniser avec la table clients
+                $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
+                if (!$client->vin) {
+                    $client->update(['vin' => $userInput]);
+                }
                 break;
+
             case 'collect_carte_vip':
                 $conversation->update(['carte_vip' => $userInput]);
+
+                // Synchroniser avec la table clients
+                $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
+                if (!$client->carte_vip) {
+                    $client->update(['carte_vip' => $userInput]);
+                }
                 break;
+
             case 'check_client':
-                $conversation->update(['is_client' => $userInput === 'oui']);
+                $isClient = in_array($userInput, ['1', 'oui', 'yes']);
+                $conversation->update(['is_client' => $isClient]);
+
+                // Synchroniser avec la table clients
+                $client = \App\Models\Client::findOrCreateByPhone($conversation->phone_number);
+                if ($client->is_client === null) {
+                    $client->update(['is_client' => $isClient]);
+                }
                 break;
         }
     }

@@ -23,7 +23,8 @@
       "WebFetch(domain:mbbot-dashboard.ywcdigital.com)",
       "Bash(cat:*)",
       "Bash(php:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(composer require:*)"
     ],
     "deny": [],
     "ask": []

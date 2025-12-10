@@ -9,7 +9,8 @@ class Client extends Model
 {
     protected $fillable = [
         'phone_number',
-        'nom_prenom',
+        'whatsapp_profile_name',
+        'client_full_name',
         'email',
         'is_client',
         'vin',
@@ -59,8 +60,14 @@ class Client extends Model
     {
         $updates = [];
 
-        if ($conversation->nom_prenom && !$this->nom_prenom) {
-            $updates['nom_prenom'] = $conversation->nom_prenom;
+        // Mise à jour du profil WhatsApp (toujours à jour)
+        if ($conversation->whatsapp_profile_name) {
+            $updates['whatsapp_profile_name'] = $conversation->whatsapp_profile_name;
+        }
+
+        // Mise à jour du nom complet (uniquement si pas déjà renseigné)
+        if ($conversation->client_full_name && !$this->client_full_name) {
+            $updates['client_full_name'] = $conversation->client_full_name;
         }
 
         if ($conversation->email && !$this->email) {
@@ -140,5 +147,43 @@ class Client extends Model
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('last_interaction_at', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Get the display name for the client
+     * Returns client_full_name if available, otherwise whatsapp_profile_name
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->client_full_name ?? $this->whatsapp_profile_name ?? 'Client inconnu';
+    }
+
+    /**
+     * Check if client has provided their full name
+     */
+    public function hasFullName(): bool
+    {
+        return !empty($this->client_full_name);
+    }
+
+    /**
+     * Get total interaction duration in seconds
+     */
+    public function getTotalDurationAttribute(): int
+    {
+        return $this->conversations()
+            ->whereNotNull('duration_seconds')
+            ->sum('duration_seconds');
+    }
+
+    /**
+     * Get all conversation events for this client
+     */
+    public function getAllEvents()
+    {
+        return ConversationEvent::whereIn(
+            'conversation_id',
+            $this->conversations()->pluck('id')
+        )->orderBy('event_at', 'desc');
     }
 }
