@@ -86,8 +86,7 @@
         <div class="card hover:shadow-md">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center space-x-3">
-                    <div :class="conversation.is_client ? 'bg-blue-600' : 'bg-gray-600'"
-                         class="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    <div class="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm bg-blue-600">
                         <span x-text="conversation.display_name.charAt(0).toUpperCase()"></span>
                     </div>
                     <div>
