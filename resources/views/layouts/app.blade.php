@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -92,67 +93,67 @@
         <!-- Navigation -->
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
             <a href="{{ route('dashboard') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard')) bg-blue-600 text-white shadow-sm hover:bg-blue-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard')) bg-blue-600 text-white shadow-sm @else text-gray-700 hover:bg-blue-50 hover:text-blue-600 @endif">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">Dashboard</span>
             </a>
 
             <a href="{{ route('dashboard.pending') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.pending')) bg-orange-600 text-white shadow-sm hover:bg-orange-700 @else text-gray-700 hover:bg-gray-100 @endif"
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.pending')) bg-orange-600 text-white shadow-sm @else text-gray-700 hover:bg-orange-50 hover:text-orange-600 @endif"
                x-data="{ pendingCount: {{ \App\Models\Conversation::where('status', 'transferred')->whereNull('agent_id')->count() }} }"
                x-init="setInterval(() => {
                    fetch('/api/dashboard/pending-count', {
                        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') }
                    }).then(r => r.json()).then(data => pendingCount = data.count).catch(() => {});
                }, 5000)">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.pending')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">En attente agent</span>
                 <span x-show="pendingCount > 0"
                       x-cloak
                       x-transition
-                      class="flex-shrink-0 px-2 py-0.5 text-xs font-bold rounded-full pulse-badge @if(request()->routeIs('dashboard.pending')) bg-white text-orange-600 @else bg-red-600 text-white @endif"
+                      class="flex-shrink-0 px-2 py-0.5 text-xs font-bold rounded-full pulse-badge @if(request()->routeIs('dashboard.pending')) bg-white text-orange-600 @else bg-orange-600 text-white @endif"
                       x-text="pendingCount"></span>
             </a>
 
             <a href="{{ route('dashboard.active') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.active')) bg-green-600 text-white shadow-sm hover:bg-green-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.active')) bg-green-600 text-white shadow-sm @else text-gray-700 hover:bg-green-50 hover:text-green-600 @endif">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.active')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">Conversations actives</span>
             </a>
 
             <a href="{{ route('dashboard.conversations') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.conversations') || request()->routeIs('dashboard.show')) bg-blue-600 text-white shadow-sm hover:bg-blue-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.conversations') || request()->routeIs('dashboard.show')) bg-blue-600 text-white shadow-sm @else text-gray-700 hover:bg-blue-50 hover:text-blue-600 @endif">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.conversations') && !request()->routeIs('dashboard.show')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">Toutes les conversations</span>
             </a>
 
             <a href="{{ route('dashboard.statistics') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.statistics')) bg-purple-600 text-white shadow-sm hover:bg-purple-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.statistics')) bg-purple-600 text-white shadow-sm @else text-gray-700 hover:bg-purple-50 hover:text-purple-600 @endif">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.statistics')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">Statistiques</span>
             </a>
 
             <a href="{{ route('dashboard.search') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.search')) bg-cyan-600 text-white shadow-sm hover:bg-cyan-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.search')) bg-cyan-600 text-white shadow-sm @else text-gray-700 hover:bg-cyan-50 hover:text-cyan-600 @endif">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.search')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">Recherche</span>
             </a>
 
             <a href="{{ route('dashboard.clients.index') }}"
-               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.clients.*')) bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.clients.*')) bg-indigo-600 text-white shadow-sm @else text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 @endif">
+                <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.clients.*')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
                 <span class="flex-1 min-w-0 truncate">Clients</span>
@@ -162,8 +163,8 @@
             <div class="pt-3 mt-3 border-t border-gray-200">
                 <p class="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</p>
                 <a href="{{ route('dashboard.users.index') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.users.*')) bg-pink-600 text-white shadow-sm hover:bg-pink-700 @else text-gray-700 hover:bg-gray-100 @endif">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 @if(request()->routeIs('dashboard.users.*')) bg-pink-600 text-white shadow-sm @else text-gray-700 hover:bg-pink-50 hover:text-pink-600 @endif">
+                    <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-150 @if(!request()->routeIs('dashboard.users.*')) group-hover:scale-110 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
                     <span class="flex-1 min-w-0 truncate">Utilisateurs</span>
