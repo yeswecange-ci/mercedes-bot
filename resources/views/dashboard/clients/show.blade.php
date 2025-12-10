@@ -27,7 +27,7 @@
 <div class="bg-white shadow rounded-lg p-6 mb-6">
     <div class="flex items-start justify-between">
         <div class="flex items-center">
-            <div class="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-semibold @if($client->is_client) bg-blue-600 @else bg-gray-600 @endif">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-semibold bg-blue-600">
                 {{ strtoupper(substr($client->display_name, 0, 1)) }}
             </div>
             <div class="ml-4">

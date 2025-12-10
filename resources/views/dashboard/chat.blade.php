@@ -12,7 +12,7 @@
             <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-blue-50">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <div class="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold mr-3 @if($conversation->is_client) bg-blue-600 @else bg-gray-600 @endif">
+                        <div class="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold mr-3 bg-blue-600">
                             {{ strtoupper(substr($conversation->display_name ?? 'C', 0, 1)) }}
                         </div>
                         <div>
