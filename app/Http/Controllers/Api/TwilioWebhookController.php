@@ -139,6 +139,7 @@ class TwilioWebhookController extends Controller
             $isPendingAgent = $conversation->status === 'transferred' && $conversation->agent_id === null;
 
             // Return conversation data to Twilio Flow
+            // IMPORTANT: Twilio Flow compare avec des chaînes "true"/"false", pas des booléens
             return response()->json([
                 'success' => true,
                 'conversation_id' => $conversation->id,
@@ -151,13 +152,13 @@ class TwilioWebhookController extends Controller
                 'profile_name' => $profileName ?? $conversation->whatsapp_profile_name,
                 'message' => $body,
                 'status' => $conversation->status,
-                'agent_mode' => $isAgentMode,
-                'pending_agent' => $isPendingAgent,  // Nouveau: conversation en attente d'agent
-                'has_media' => $numMedia > 0,
+                'agent_mode' => $isAgentMode ? 'true' : 'false',
+                'pending_agent' => $isPendingAgent ? 'true' : 'false',
+                'has_media' => $numMedia > 0 ? 'true' : 'false',
                 'media_count' => $numMedia,
-                'client_exists' => $clientExists,
-                'client_has_name' => $client->client_full_name !== null,
-                'client_status_known' => $client->is_client !== null,
+                'client_exists' => $clientExists ? 'true' : 'false',
+                'client_has_name' => $client->client_full_name !== null ? 'true' : 'false',
+                'client_status_known' => $client->is_client !== null ? 'true' : 'false',
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
